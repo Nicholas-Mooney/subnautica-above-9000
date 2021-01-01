@@ -77,6 +77,10 @@ public class MainLoop {
 
     //input functions
     public static void processInput(mapGrid map) {
+        //apply gravity
+        while(map.map[playerX][playerY].tileType.equals("air") && (map.map[playerX][playerY+1].tileType.equals("air") || map.map[playerX][playerY+1].tileType.equals("water") || map.map[playerX][playerY+1].canMove())){
+            playerY++;
+        }
         if (input.equals("a")) {
             playerX--;
         }
@@ -132,10 +136,6 @@ public class MainLoop {
 
         //normal logic
         if(!outOfBoundsFlag) {
-            //apply gravity
-            while(map.map[playerX][playerY].tileType.equals("air") && (map.map[playerX][playerY+1].tileType.equals("air") || map.map[playerX][playerY+1].tileType.equals("water"))){
-                playerY++;
-            }
 
             //going up into air
             if (input.equals("w") && (map.map[playerX][playerY].tileType.equals("air"))) {
