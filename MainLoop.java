@@ -20,6 +20,9 @@ public class MainLoop {
         //game variables
         boolean running = true;
         mapGrid map = new mapGrid(1000);
+        playerInv Inv = new playerInv();
+        Inv.addItem("kyanite");
+
 
         //game loop
         while (running) {
@@ -27,6 +30,7 @@ public class MainLoop {
             display(map);
             processInput(map);
             input = "";
+            gui.inventoryFieldUpdater("hello vietnam" + Inv.retString());
       }
     }
     public static void wait(int x) {
@@ -71,18 +75,8 @@ public class MainLoop {
         textPane2.setVisible(false);
     }
 
-
-
     //input functions
     public static void processInput(mapGrid map) {
-        //apply gravity
-        while(map.map[playerX][playerY].tileType.equals("air")
-                && (
-                map.map[playerX][playerY+1].tileType.equals("air") ||
-                        map.map[playerX][playerY+1].tileType.equals("water") ||
-                        map.map[playerX][playerY+1].canMove() )){
-            playerY++;
-        }
         if (input.equals("a")) {
             playerX--;
         }
@@ -138,7 +132,15 @@ public class MainLoop {
 
         //normal logic
         if(!outOfBoundsFlag) {
+            //apply gravity
+            while(map.map[playerX][playerY].tileType.equals("air") && (map.map[playerX][playerY+1].tileType.equals("air") || map.map[playerX][playerY+1].tileType.equals("water"))){
+                playerY++;
+            }
 
+            //going up into air
+            if (input.equals("w") && (map.map[playerX][playerY].tileType.equals("air"))) {
+                playerY++;
+            }
             //going up into solid
             if (input.equals("w") && !(map.map[playerX][playerY].canMove())) {
                 playerY++;

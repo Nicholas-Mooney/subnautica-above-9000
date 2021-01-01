@@ -6,7 +6,7 @@ public class tileSet {
     //TODO add
     //canMove |
     public boolean canMove(){
-        if(tileType.equals("water") || tileType.equals("air") || tileType.equals("kelp") || tileType.equals("brain")){
+        if(tileType.equals("water") || tileType.equals("air") || tileType.equals("brain") || tileType.equals("kelp")){
             return true;
         }else{
             return false;

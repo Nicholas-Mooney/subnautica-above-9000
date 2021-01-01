@@ -29,4 +29,12 @@ public void die(){
     }
 }
 
+public String retString(){
+    String ret = "";
+    for(int i = 0; i < numItems; i++){
+        ret = ret + '\n' + i + ": " + items.get(i);
+    }
+    return ret;
+}
+
 }
