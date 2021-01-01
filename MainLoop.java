@@ -5,6 +5,7 @@ import java.util.*;
 import java.lang.Math;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.pow;
 
 public class MainLoop {
     public static Random rand = new Random();
@@ -67,6 +68,28 @@ public class MainLoop {
         textPane.setText("");
         int py = playerY;
         int px = playerX;
+        ArrayList<Integer> xArr = new ArrayList<Integer>();
+        ArrayList<Integer> yArr = new ArrayList<Integer>();
+        ArrayList<Integer> pArr = new ArrayList<Integer>();
+        int numLights = 0;
+        //TESTING BRAIN LIGHTING
+        xArr.clear();
+        yArr.clear();
+        pArr.clear();
+        for (int y = py - viewportY - 10; y <=  py + viewportY + 10; y++) {
+            for (int x = px - viewportX - 10; x < px + viewportX + 10; x++) {
+                if(x >= mapGrid.maxX || y >= mapGrid.maxY || y < 0 || x < 0){
+                    //textPane.append("| ", Color.GRAY);
+                    //System.out.print("| ");
+                }else {
+                    if(MainLoop.map.map[x][y].tileType.equals("brain")){
+                        xArr.add(x);
+                        yArr.add(y);
+                        pArr.add(5);
+                    }
+                }
+            }
+        }
 
         for (int y = py - viewportY; y <=  py + viewportY; y++) {
             for (int x = px - viewportX; x < px + viewportX; x++) {
@@ -74,10 +97,12 @@ public class MainLoop {
                     textPane.append("P ");
                 } else {
                     if(x >= mapGrid.maxX || y >= mapGrid.maxY || y < 0 || x < 0){
-                        textPane.append("| ", Color.white);
+                        textPane.append("| ", Color.GRAY);
                         //System.out.print("| ");
                     }else {
                         //System.out.print(displayForTile(mapGrid.map[x][y]));
+
+                       //player radius
                         int dx = abs(px - x);
                         int dy = abs(py - y);
                         int r;
@@ -92,7 +117,9 @@ public class MainLoop {
                         }else{
                             r = 5;
                         }
-                        textPane.append(charForTile(mapGrid.map[x][y]) + " ", colorForTile(mapGrid.map[x][y], y, r));
+
+
+                        textPane.append(charForTile(mapGrid.map[x][y]) + " ", colorForTile(mapGrid.map[x][y],x, y, r, xArr, yArr, pArr));
                     }
                 }
             }
@@ -354,15 +381,17 @@ public class MainLoop {
                 return '!';
         }
     }
-    public static Color colorForTile(tileSet tile, int y, int r){
+    public static Color colorForTile(tileSet tile, int x, int y, int r, ArrayList<Integer> xArr, ArrayList<Integer> yArr, ArrayList<Integer> pArr){
+        //depth lighting
         double daylight = MainLoop.dayCount/3000.0;
         daylight = (Math.sin(daylight * 2 * Math.PI) + 1) / 2.0;
-
         double elevation = y;
         if(elevation >= 100){
             elevation = 0;
         }
         double m1 = daylight * (100 - elevation) / 100.0;
+
+        //player lighting
         double m2 = 0;
         if(r <= 4){
             if(r == 1){
@@ -375,8 +404,30 @@ public class MainLoop {
                 m2 = 0.30;
             }
         }
-        double m = Math.max(m1, m2);
 
+        //entity lighting
+        double[] pr = new double[xArr.size()];
+        for(int i = 0; i < pr.length; i++){
+            int dx = Math.abs(x - xArr.get(i));
+            int dy = Math.abs(y - yArr.get(i));
+            double radius = pow(((pow(dx,2))+(pow(dy,2))),0.5);
+            pr[i] = pow(5/radius,(0.5));
+        }
+
+        //take highest
+        double xmax = 0;
+        if(pr.length != 0) {
+            System.out.print("pr" + pr.length);
+            xmax = pr[0];
+            for (int h = 0; h < pr.length - 1; h++){
+                xmax = Math.max(xmax, pr[h+1]);
+            }
+        }
+        double m = Math.max(m1, m2);
+        m = Math.max(m, xmax);
+        if(m > 1){
+            m = 1;
+        }
 
         switch(tile.tileType){
             case "air":

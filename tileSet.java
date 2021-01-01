@@ -16,4 +16,11 @@ public class tileSet {
             return false;
         }
     }
+    public boolean isLightSource(){
+        if(tileType.equals("brain")){
+            return true;
+        }else{
+            return false;
+        }
+    }
 }
