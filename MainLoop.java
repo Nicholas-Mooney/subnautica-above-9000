@@ -5,12 +5,12 @@ public class MainLoop {
     public static Random rand = new Random();
     public static Scanner sc = new Scanner(System.in);
     public static GUI gui = new GUI(); //THIS
-    public static int playerX = 10;
-    public static int playerY = 50;
+    public static int playerX = 20;
+    public static int playerY = 15;
     public static int map_sizeX = 1000;
     public static int map_sizeY = 1000;
-    public static int viewportX = 15;
-    public static int viewportY = 10;
+    public static int viewportX = 17;
+    public static int viewportY = 12;
 
     public static int count = 0; ///THIS
 
@@ -90,7 +90,11 @@ public class MainLoop {
         unmover(map);
     }
     public static void unmover(mapGrid map){
+        boolean outOfBoundsFlag = false;
+
+        //Hit border
         if(playerX >= mapGrid.maxX || playerY >= mapGrid.maxY || playerY < 0 || playerX < 0){
+            outOfBoundsFlag = true;
             if (input.equals("a")) {
                 playerX++;
             }
@@ -104,12 +108,63 @@ public class MainLoop {
                 playerY++;
             }
         }
-        if(input.equals("w")&& (map.map[playerX][playerY].tileType.equals("air"))){
-            playerY++;
+
+        //at border simpler logic no out of bounds
+        else if(playerY == 0){
+            outOfBoundsFlag = true;
+            if(!map.map[playerX][playerY].canMove()) {
+                if (input.equals("a")) {
+                    playerX++;
+                }
+                if (input.equals("s")) {
+                    playerY--;
+                }
+                if (input.equals("d")) {
+                    playerX--;
+                }
+                if (input.equals("w")) {
+                    playerY++;
+                }
+            }
+        }
+
+        //normal logic
+        if(!outOfBoundsFlag) {
+            //apply gravity
+            while(map.map[playerX][playerY].tileType.equals("air") && (map.map[playerX][playerY+1].tileType.equals("air") || map.map[playerX][playerY+1].tileType.equals("water"))){
+                playerY++;
+            }
+
+            //going up into air
+            if (input.equals("w") && (map.map[playerX][playerY].tileType.equals("air"))) {
+                playerY++;
+            }
+            //going up into solid
+            if (input.equals("w") && !(map.map[playerX][playerY].canMove())) {
+                playerY++;
+            }
+            //going down into solid
+            if (input.equals("s") && !(map.map[playerX][playerY].canMove())) {
+                playerY--;
+            }
+
+            //going right into solid w/o air
+            if ((input.equals("d") && !(map.map[playerX][playerY - 1].tileType.equals("air")) && !(map.map[playerX][playerY].canMove()))){
+                playerX--;
+            }
+            //going left into solid w/o air
+            else if ((input.equals("a") && !(map.map[playerX][playerY - 1].tileType.equals("air")) && !(map.map[playerX][playerY].canMove()))) {
+                playerX++;
+            }
+
+            //going left or right w/ air above
+            else if (((input.equals("a") || input.equals("d")) && (map.map[playerX][playerY - 1].tileType.equals("air")) && !(map.map[playerX][playerY].canMove()))) {
+                playerY--;
+            }
         }
     };
 
-    //
+    //display functions
     public static void displayOld() {
         for (int y = playerY - viewportY; y < playerY + viewportY; y++) {
             for (int x = playerX - viewportX; x < playerX + viewportX; x++) {
