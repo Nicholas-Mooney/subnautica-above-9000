@@ -17,8 +17,8 @@ public class mapGrid {
             for (int x = 0; x < maxX; x++) {
 
                 double slope = 0.25; //slope of the terrain before modifications (slope downwards)
-                double sin_weight = 10; //heigher values will amke the terrain look like a sin graph
-                double noise_weight = 1; ///heigher values makes the terrain more noisier and random
+                double sin_weight = 0; //heigher values will amke the terrain look like a sin graph
+                double noise_weight = 0; ///heigher values makes the terrain more noisier and random
 
                 //adds random noise
                 heightmap[x] = noise_weight * SimplexNoise.noise(rand.nextInt(10), 0);
@@ -65,12 +65,7 @@ public class mapGrid {
                 }
             }
 
-            //lay down kelp
-
-
-
-
-
+            //cellular automata lays down cave network
             boolean[][] cellmap = new boolean[maxX][maxY];
             for (int x = 0; x < maxX; x++) {
                 for (int y = 0; y < maxY; y++) {
@@ -99,6 +94,8 @@ public class mapGrid {
                     }
                 }
             }
+
+            //kelp
             int PlantFrequency = 5;//(heigher = rarer)
             for (int y = 0; y < maxY; y++) {
                 for (int x = 0; x < maxX; x++) {
@@ -122,6 +119,7 @@ public class mapGrid {
                 }
             }
 
+            //brain coral
             int BrainFrequency = 10;//(heigher = rarer)
             for (int y = 0; y < maxY; y++) {
                 for (int x = 0; x < maxX; x++) {
@@ -137,6 +135,10 @@ public class mapGrid {
                     }
                 }
             }
+
+
+
+
         } else {
             maxX = 100;
             maxY = 100;

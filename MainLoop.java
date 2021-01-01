@@ -21,7 +21,7 @@ public class MainLoop {
 
     public static int count = 0; ///THIS
     public static int dayCount = 1200;
-
+    public static boolean displayAll = false;
     public static String input = "starting_input";
     public static playerInv Inv = new playerInv();
     public static mapGrid map = new mapGrid(1000);
@@ -508,6 +508,9 @@ public class MainLoop {
         double m = Math.max(m1, m2);
         m = Math.max(m, xmax);
         if (m > 1) {
+            m = 1;
+        }
+        if (displayAll) {
             m = 1;
         }
 
