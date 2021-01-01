@@ -123,8 +123,13 @@ public class GUI extends JTextPane {
         panel.setFocusable(false);
         panel.setBackground(Color.BLACK);
     }
+    public static boolean DOWN_HELD = false;
+    public static boolean UP_HELD = false;
+    public static boolean LEFT_HELD = false;
+    public static boolean RIGHT_HELD = false;
     public void addKeyListenerHere(JComponent comp) {
         comp.addKeyListener(new KeyListener() {
+
             @Override
             public void keyTyped(KeyEvent e) {
             }
@@ -133,16 +138,16 @@ public class GUI extends JTextPane {
                 int keyCode = e.getKeyCode();
                 switch (keyCode) {
                     case (KeyEvent.VK_W) -> {
-                        MainLoop.input = "w";
+                        UP_HELD = true;
                     }
                     case (KeyEvent.VK_S) -> {
-                        MainLoop.input = "s";
+                        DOWN_HELD = true;
                     }
                     case (KeyEvent.VK_A) -> {
-                        MainLoop.input = "a";
+                        LEFT_HELD = true;
                     }
                     case (KeyEvent.VK_D) -> {
-                        MainLoop.input = "d";
+                        RIGHT_HELD = true;
                     }
                     case (KeyEvent.VK_SPACE) -> {
 
@@ -158,9 +163,23 @@ public class GUI extends JTextPane {
             public void keyReleased(KeyEvent e) {
                 int keyCode = e.getKeyCode();
                 switch (keyCode) {
+                    case (KeyEvent.VK_W) -> {
+                        UP_HELD = false;
+                    }
+                    case (KeyEvent.VK_S) -> {
+                        DOWN_HELD = false;
+                    }
+                    case (KeyEvent.VK_A) -> {
+                        LEFT_HELD = false;
+                    }
+                    case (KeyEvent.VK_D) -> {
+                        RIGHT_HELD = false;
+                    }
                 }
             }
+
         });
+
     }
     public void inventoryFieldUpdater(String string) { ;
         inventoryPane.setText(string);

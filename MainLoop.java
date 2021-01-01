@@ -77,8 +77,34 @@ public class MainLoop {
 
     //input functions
     public static void processInput(mapGrid map) {
+        //these functions detect the HELD values from gui, turned off by key release signals
+        if (GUI.UP_HELD && !GUI.DOWN_HELD && !GUI.LEFT_HELD && !GUI.RIGHT_HELD) {
+            MainLoop.input = "w";
+        }
+        if (!GUI.UP_HELD && GUI.DOWN_HELD && !GUI.LEFT_HELD && !GUI.RIGHT_HELD) {
+            MainLoop.input = "s";
+        }
+        if (!GUI.UP_HELD && !GUI.DOWN_HELD && !GUI.LEFT_HELD && GUI.RIGHT_HELD) {
+            MainLoop.input = "d";
+        }
+        if (!GUI.UP_HELD && !GUI.DOWN_HELD && GUI.LEFT_HELD && !GUI.RIGHT_HELD) {
+            MainLoop.input = "a";
+        }
+        if (GUI.UP_HELD && !GUI.DOWN_HELD && !GUI.LEFT_HELD && GUI.RIGHT_HELD) {
+            MainLoop.input = "e";
+        }
+        if (GUI.UP_HELD && !GUI.DOWN_HELD && GUI.LEFT_HELD && !GUI.RIGHT_HELD) {
+            MainLoop.input = "q";
+        }
+        if (!GUI.UP_HELD && GUI.DOWN_HELD && !GUI.LEFT_HELD && GUI.RIGHT_HELD) {
+            MainLoop.input = "c";
+        }
+        if (!GUI.UP_HELD && GUI.DOWN_HELD && GUI.LEFT_HELD && !GUI.RIGHT_HELD) {
+            MainLoop.input = "z";
+        }
+
         //apply gravity
-        while(map.map[playerX][playerY].tileType.equals("air") && (map.map[playerX][playerY+1].tileType.equals("air") || map.map[playerX][playerY+1].tileType.equals("water") || map.map[playerX][playerY+1].canMove())){
+        while(map.map[playerX][playerY].tileType.equals("air") && (map.map[playerX][playerY+1].tileType.equals("air") || map.map[playerX][playerY+1].canMove())){
             playerY++;
         }
         if (input.equals("a")) {
@@ -92,6 +118,24 @@ public class MainLoop {
         }
         if (input.equals("w")) {
             playerY--;
+        }
+
+        //DIAGONAL MOVERS
+        if (input.equals("e")) {
+            playerX++;
+            playerY--;
+        }
+        if (input.equals("q")) {
+            playerY--;
+            playerX--;
+        }
+        if (input.equals("c")) {
+            playerX++;
+            playerY++;
+        }
+        if (input.equals("z")) {
+            playerY++;
+            playerX--;
         }
         unmover(map);
     }
@@ -137,6 +181,7 @@ public class MainLoop {
         //normal logic
         if(!outOfBoundsFlag) {
 
+
             //going up into air
             if (input.equals("w") && (map.map[playerX][playerY].tileType.equals("air"))) {
                 playerY++;
@@ -145,18 +190,52 @@ public class MainLoop {
             if (input.equals("w") && !(map.map[playerX][playerY].canMove())) {
                 playerY++;
             }
+            //going up into air
+            if (input.equals("e") && (map.map[playerX][playerY].tileType.equals("air"))) {
+                playerY++;
+                playerX--;
+            }
+            //going up into solid
+            if (input.equals("e") && !(map.map[playerX][playerY].canMove())) {
+                playerY++;
+                playerX--;
+            }
+            //going up into air
+            if (input.equals("q") && (map.map[playerX][playerY].tileType.equals("air"))) {
+                playerY++;
+                playerX++;
+            }
+            //going up into solid
+            if (input.equals("q") && !(map.map[playerX][playerY].canMove())) {
+                playerY++;
+                playerX++;
+            }
             //going down into solid
             if (input.equals("s") && !(map.map[playerX][playerY].canMove())) {
                 playerY--;
             }
-
             //going right into solid w/o air
             if ((input.equals("d") && !(map.map[playerX][playerY - 1].tileType.equals("air")) && !(map.map[playerX][playerY].canMove()))){
                 playerX--;
+            } else if ((input.equals("e") && !(map.map[playerX][playerY - 1].tileType.equals("air")) && !(map.map[playerX][playerY].canMove()))) {
+                playerX--;
+                playerY++;
             }
+            else if ((input.equals("c") && !(map.map[playerX][playerY - 1].tileType.equals("air")) && !(map.map[playerX][playerY].canMove()))) {
+                playerX--;
+                playerY--;
+            }
+
             //going left into solid w/o air
             else if ((input.equals("a") && !(map.map[playerX][playerY - 1].tileType.equals("air")) && !(map.map[playerX][playerY].canMove()))) {
                 playerX++;
+            } else if ((input.equals("z") && !(map.map[playerX][playerY - 1].tileType.equals("air")) && !(map.map[playerX][playerY].canMove()))) {
+                playerX++;
+                playerY--;
+            }
+            else if ((input.equals("q") && !(map.map[playerX][playerY - 1].tileType.equals("air")) && !(map.map[playerX][playerY].canMove()))) {
+                playerX++;
+                playerY++;
             }
 
             //going left or right w/ air above
