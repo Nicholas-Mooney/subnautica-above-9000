@@ -48,13 +48,11 @@ public class mapGrid {
         //labels tiles water/earth based on height map
         for(int y = 0; y < maxY; y++){
             for(int x = 0; x < maxX; x++){
-                if(y<20 + heightmap[x]){
-                    tileType = "water";
-                }else{
-                    tileType = "earth";
+                if(y > 20 + heightmap[x]){
+                    map[x][y].tileType = "earth";
                 }
-                tileSet a = new tileSet(tileType);
-                map[x][y] = a;
+
+
             }
         }
 
