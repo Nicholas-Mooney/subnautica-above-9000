@@ -9,7 +9,7 @@ public class mapGrid {
     public static Random rand = new Random();
 
     mapGrid(int seed){
-        boolean regular = false;
+        boolean regular = true;
         if (regular) {
             String tileType;
 
@@ -68,21 +68,7 @@ public class mapGrid {
             //lay down kelp
 
 
-            int BrainFrequency = 10;//(heigher = rarer)
-            for (int y = 0; y < maxY; y++) {
-                for (int x = 0; x < maxX; x++) {
-                    try {
-                        if (map[x][y + 1].tileType.equals("earth") && map[x][y].tileType.equals("water")) {
-                            if (rand.nextInt(BrainFrequency) == 0) {
-                                map[x][y].tileType = "brain";
 
-                            }
-                        }
-                    } catch (Exception e) {
-                        //System.out.println("ERROR");
-                    }
-                }
-            }
 
 
             boolean[][] cellmap = new boolean[maxX][maxY];
@@ -132,6 +118,22 @@ public class mapGrid {
                         }
                     } catch (Exception ignored) {
 
+                    }
+                }
+            }
+
+            int BrainFrequency = 10;//(heigher = rarer)
+            for (int y = 0; y < maxY; y++) {
+                for (int x = 0; x < maxX; x++) {
+                    try {
+                        if (map[x][y + 1].tileType.equals("earth") && map[x][y].tileType.equals("water")) {
+                            if (rand.nextInt(BrainFrequency) == 0) {
+                                map[x][y].tileType = "brain";
+
+                            }
+                        }
+                    } catch (Exception e) {
+                        //System.out.println("ERROR");
                     }
                 }
             }

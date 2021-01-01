@@ -10,6 +10,7 @@ public class MainLoop {
     public static Random rand = new Random();
     public static Scanner sc = new Scanner(System.in);
     public static GUI gui = new GUI(); //THIS
+
     public static int playerX = 20;
     public static int playerY = 5;
     public static int map_sizeX = 1000;
@@ -39,8 +40,10 @@ public class MainLoop {
             processInput(map);
             input = "";
             gui.inventoryFieldUpdater("hello vietnam" + Inv.retString());
-            map.mapRefresh();
-
+            map.mapRefresh(); //updates fruit and kelp growth on mapgrid
+            entityTicker(); //updates entity tick count which controls entity behaviour
+            entityUpdater(); //executes all entity movement
+            entitySpawner(); //sapwns bubbless
             //daycount
             dayCount++;
             if( dayCount > 3000 ){
@@ -64,30 +67,6 @@ public class MainLoop {
             displayRoomX(gui.textPaneHView, gui.textPaneHView2, map);
             count = 0;
         }
-    }
-    public static boolean checkEntity(int x, int y) {
-        for (Entity entity : entities) {
-            if (entity.x == x && entity.y == y) {
-                return true;
-            }
-        }
-        return false;
-    }
-    public static String getEntityChar(int x, int y) {
-        for (Entity entity : entities) {
-            if (entity.x == x && entity.y == y) {
-                return entity.chara;
-            }
-        }
-        return "!";
-    }
-    public static Color getEntityColor(int x, int y) {
-        for (Entity entity : entities) {
-            if (entity.x == x && entity.y == y) {
-                return entity.color;
-            }
-        }
-        return Color.BLUE;
     }
     public static void displayRoomX(JTextAreaA textPane, JTextAreaA textPane2, mapGrid map) {
         textPane.setText("");
@@ -128,6 +107,81 @@ public class MainLoop {
         }
         textPane.setVisible(true);
         textPane2.setVisible(false);
+    }
+    public static boolean checkEntity(int x, int y) {
+        for (Entity entity : entities) {
+            if (entity.x == x && entity.y == y) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public static String getEntityChar(int x, int y) {
+        for (Entity entity : entities) {
+            if (entity.x == x && entity.y == y) {
+                return entity.chara;
+            }
+        }
+        return "!";
+    }
+    public static Color getEntityColor(int x, int y) {
+        for (Entity entity : entities) {
+            if (entity.x == x && entity.y == y) {
+                return entity.color;
+            }
+        }
+        return Color.BLUE;
+    }
+
+    //entity manager
+    public static int entityTickCount = 0;
+    public static void entityTicker() {
+        entityTickCount++;
+    }
+    public static void entityUpdater() {     //controls entity behaviour
+        for (Entity entity : entities) {
+            if (entity.type.equals("bubble")) {
+                //desynchronizes entity motion by comparing entityTickCount to a value assigned to entity at its birth depending on the tick, instead of updating on the same tick for all entities!
+                if (!entity.hasStartingDivisible) {
+                    entity.startingDivisible = entityTickCount % 4;
+                    entity.hasStartingDivisible = true;
+                }
+                if (entityTickCount% 4 == entity.startingDivisible) {
+                    entity.y--;
+                }
+                //dont remove entities while list is iterating
+                if (mapGrid.map[entity.x][entity.y].tileType.equals("air") || mapGrid.map[entity.x][entity.y].tileType.equals("earth")) {
+                    entity.flagForRemoval = true;
+                }
+                if (playerX == entity.x && playerY == entity.y) {
+                    entity.flagForRemoval = true;
+                    gui.errorFieldUpdater("BUBBLE COLLECTED",Color.white);
+                }
+            } else
+            if (entity.type.equals("fish")) {
+
+            } else {
+                System.out.println("Untyped entity present");
+            }
+        }
+        //remove flagged entities safely
+        for (int x = 0; x < entities.size(); x++) {
+            if (entities.get(x).flagForRemoval) {
+                entities.remove(x);
+                x++;
+            }
+        }
+    }
+    public static void entitySpawner() {
+        for (int x = 0; x < mapGrid.maxX; x++) {
+            for (int y = 0; y < mapGrid.maxY; y++) {
+                if (mapGrid.map[x][y].tileType.equals("brain")) {
+                    if (rand.nextInt(200) < 1) {
+                        entities.add(new Entity("O", "bubble", x, y, Color.white));
+                    }
+                }
+            }
+        }
     }
 
     //input functions

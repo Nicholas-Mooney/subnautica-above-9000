@@ -153,7 +153,7 @@ public class GUI extends JTextPane {
                         MainLoop.input = "g";
                     }
                     case (KeyEvent.VK_SPACE) -> {
-                        MainLoop.entities.add(new Entity("m", "fish", MainLoop.playerX, MainLoop.playerY + 1, Color.white));
+                        MainLoop.entities.add(new Entity("O", "bubble", MainLoop.playerX, MainLoop.playerY + 1, Color.white));
                     }
                     /*
                     case () -> {
