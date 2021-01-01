@@ -9,127 +9,146 @@ public class mapGrid {
     public static Random rand = new Random();
 
     mapGrid(int seed){
-        String tileType;
+        boolean regular = false;
+        if (regular) {
+            String tileType;
 
-        //generates heightmap
-        for (int x = 0; x < maxX; x++) {
+            //generates heightmap
+            for (int x = 0; x < maxX; x++) {
 
-            double slope = 0.25; //slope of the terrain before modifications (slope downwards)
-            double sin_weight = 10; //heigher values will amke the terrain look like a sin graph
-            double noise_weight = 1; ///heigher values makes the terrain more noisier and random
+                double slope = 0.25; //slope of the terrain before modifications (slope downwards)
+                double sin_weight = 10; //heigher values will amke the terrain look like a sin graph
+                double noise_weight = 1; ///heigher values makes the terrain more noisier and random
 
-            //adds random noise
-            heightmap[x] =  noise_weight * SimplexNoise.noise(rand.nextInt(10),0);
+                //adds random noise
+                heightmap[x] = noise_weight * SimplexNoise.noise(rand.nextInt(10), 0);
 
-            //slope trend of terrain
-            heightmap[x] = heightmap[x] - 10 + slope * x;
+                //slope trend of terrain
+                heightmap[x] = heightmap[x] - 10 + slope * x;
 
-            //adds sinosoidal noise
-            heightmap[x] = heightmap[x] + sin_weight * Math.sin(0.25 * x);
+                //adds sinosoidal noise
+                heightmap[x] = heightmap[x] + sin_weight * Math.sin(0.25 * x);
 
-        }
-
-        //labels tiles air/water based on integer
-        for(int y = 0; y < maxY; y++){
-            for(int x = 0; x < maxX; x++){
-                if(y<10){
-                    tileType = "air";
-                }else{
-                    tileType = "water";
-                }
-                tileSet a = new tileSet(tileType);
-                map[x][y] = a;
             }
-        }
 
-        //labels tiles water/earth based on height map
-        for(int y = 0; y < maxY; y++){
-            for(int x = 0; x < maxX; x++){
-                if(y > 20 + heightmap[x]){
-                    map[x][y].tileType = "earth";
+            //labels tiles air/water based on integer
+            for (int y = 0; y < maxY; y++) {
+                for (int x = 0; x < maxX; x++) {
+                    if (y < 10) {
+                        tileType = "air";
+                    } else {
+                        tileType = "water";
+                    }
+                    tileSet a = new tileSet(tileType);
+                    map[x][y] = a;
                 }
             }
-        }
 
-        //labels tiles ore
-        int OreFrequency = 50;//(heigher = rarer)
-        for(int y = 0; y < maxY; y++){
-            for(int x = 0; x < maxX; x++){
-                if(map[x][y].tileType.equals("earth")) {
-                    if (rand.nextInt(OreFrequency) == 0) {
-                        map[x][y].tileType = "ore";
+            //labels tiles water/earth based on height map
+            for (int y = 0; y < maxY; y++) {
+                for (int x = 0; x < maxX; x++) {
+                    if (y > 20 + heightmap[x]) {
+                        map[x][y].tileType = "earth";
                     }
                 }
             }
-        }
 
-        //lay down kelp
-
-
-        int BrainFrequency = 10;//(heigher = rarer)
-        for(int y = 0; y < maxY; y++){
-            for(int x = 0; x < maxX; x++){
-                try {
-                    if (map[x][y + 1].tileType.equals("earth") && map[x][y].tileType.equals("water")) {
-                        if (rand.nextInt(BrainFrequency) == 0) {
-                            map[x][y].tileType = "brain";
-
+            //labels tiles ore
+            int OreFrequency = 50;//(heigher = rarer)
+            for (int y = 0; y < maxY; y++) {
+                for (int x = 0; x < maxX; x++) {
+                    if (map[x][y].tileType.equals("earth")) {
+                        if (rand.nextInt(OreFrequency) == 0) {
+                            map[x][y].tileType = "ore";
                         }
                     }
-                } catch (Exception e) {
-                    //System.out.println("ERROR");
                 }
             }
-        }
+
+            //lay down kelp
 
 
-        boolean[][] cellmap = new boolean[maxX][maxY];
-        for (int x = 0; x < maxX; x++) {
-            for (int y = 0; y < maxY; y++){
-                if (y > 40) {
-                    cellmap[x][y] = false;
-                } else {
-                    cellmap[x][y] = true;
+            int BrainFrequency = 10;//(heigher = rarer)
+            for (int y = 0; y < maxY; y++) {
+                for (int x = 0; x < maxX; x++) {
+                    try {
+                        if (map[x][y + 1].tileType.equals("earth") && map[x][y].tileType.equals("water")) {
+                            if (rand.nextInt(BrainFrequency) == 0) {
+                                map[x][y].tileType = "brain";
+
+                            }
+                        }
+                    } catch (Exception e) {
+                        //System.out.println("ERROR");
+                    }
                 }
             }
-        }
-        double seed_chance = 45;
-        for (int x = 0; x < maxX; x++) {
-            for (int y = 0; y < maxY; y++){
-                if (rand.nextInt(100) < seed_chance) {
-                    cellmap[x][y] = true; //false means water
+
+
+            boolean[][] cellmap = new boolean[maxX][maxY];
+            for (int x = 0; x < maxX; x++) {
+                for (int y = 0; y < maxY; y++) {
+                    if (y > 40) {
+                        cellmap[x][y] = false;
+                    } else {
+                        cellmap[x][y] = true;
+                    }
                 }
             }
-        }
-        for (int z = 0; z < 1000; z++) {
-            cellmap = doSimulationStep(cellmap);
-        }
-        for (int x = 0; x < maxX; x++) {
-            for (int y = 0; y < maxY; y++){
-                if (!cellmap[x][y]) {
-                    map[x][y].tileType = "water";
+            double seed_chance = 45;
+            for (int x = 0; x < maxX; x++) {
+                for (int y = 0; y < maxY; y++) {
+                    if (rand.nextInt(100) < seed_chance) {
+                        cellmap[x][y] = true; //false means water
+                    }
                 }
             }
-        }
-        int PlantFrequency = 5;//(heigher = rarer)
-        for(int y = 0; y < maxY; y++){
-            for(int x = 0; x < maxX; x++){
-                try {
-                    if (map[x][y + 1].tileType.equals("earth") && map[x][y].tileType.equals("water")) {
-                        if (rand.nextInt(PlantFrequency) == 0) {
-                            map[x][y].tileType = "kelp";
+            for (int z = 0; z < 1000; z++) {
+                cellmap = doSimulationStep(cellmap);
+            }
+            for (int x = 0; x < maxX; x++) {
+                for (int y = 0; y < maxY; y++) {
+                    if (!cellmap[x][y]) {
+                        map[x][y].tileType = "water";
+                    }
+                }
+            }
+            int PlantFrequency = 5;//(heigher = rarer)
+            for (int y = 0; y < maxY; y++) {
+                for (int x = 0; x < maxX; x++) {
+                    try {
+                        if (map[x][y + 1].tileType.equals("earth") && map[x][y].tileType.equals("water")) {
+                            if (rand.nextInt(PlantFrequency) == 0) {
+                                map[x][y].tileType = "kelp";
 
-                            int kelpType = rand.nextInt(6) + 1;
+                                int kelpType = rand.nextInt(6) + 1;
 
-                            for (int z = 1; z < kelpType; z++) {
-                                if (map[x][y - z].tileType.equals("water")) {
-                                    map[x][y - z].tileType = "kelp";
+                                for (int z = 1; z < kelpType; z++) {
+                                    if (map[x][y - z].tileType.equals("water")) {
+                                        map[x][y - z].tileType = "kelp";
+                                    }
                                 }
                             }
                         }
-                    }
-                } catch (Exception ignored) {
+                    } catch (Exception ignored) {
 
+                    }
+                }
+            }
+        } else {
+            maxX = 100;
+            maxY = 100;
+            String tileType;
+            //labels tiles air/water based on integer
+            for (int y = 0; y < maxY; y++) {
+                for (int x = 0; x < maxX; x++) {
+                    if (y < 10) {
+                        tileType = "air";
+                    } else {
+                        tileType = "water";
+                    }
+                    tileSet a = new tileSet(tileType);
+                    map[x][y] = a;
                 }
             }
         }
