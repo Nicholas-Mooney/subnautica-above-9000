@@ -15,8 +15,11 @@ public class MainLoop {
     public static int playerY = 5;
     public static int map_sizeX = 1000;
     public static int map_sizeY = 1000;
-    public static int viewportX = 17;
-    public static int viewportY = 12;
+    public static int viewportX = 21;
+    public static int viewportY = 14;
+    //debug vars
+    public static boolean displayAll = false;
+
 
     public static int count = 0; ///THIS
     public static int dayCount = 1200;
@@ -458,7 +461,9 @@ public class MainLoop {
             }
         }
         double m = Math.max(m1, m2);
-
+        if (displayAll) {
+            m = 1;
+        }
 
         switch(tile.tileType){
             case "air":

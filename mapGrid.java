@@ -1,3 +1,4 @@
+import java.awt.*;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -10,6 +11,10 @@ public class mapGrid {
 
     mapGrid(int seed){
         boolean regular = true;
+        MainLoop.gui.errorFieldUpdater("test", Color.white);
+        MainLoop.gui.errorFieldUpdater("f1 -> disableLighting", Color.white);
+        MainLoop.gui.errorFieldUpdater("G -> grab", Color.white);
+        MainLoop.gui.errorFieldUpdater("AWSD -> move", Color.white);
         if (regular) {
             String tileType;
 
