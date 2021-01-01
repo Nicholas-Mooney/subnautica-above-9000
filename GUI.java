@@ -12,6 +12,9 @@ public class GUI extends JTextPane {
     JPanel panel = new JPanel(new BorderLayout());
     JLayeredPane layeredPane = new JLayeredPane();
     JTextAreaA errorPane = new JTextAreaA();
+
+    JTextAreaA inventoryPane = new JTextAreaA();
+
     JTextAreaA textPaneHView = new JTextAreaA();
     JTextAreaA textPaneHView2 = new JTextAreaA();
 
@@ -35,7 +38,7 @@ public class GUI extends JTextPane {
         newTextPane(textPaneHView2, fontMed, new Dimension(WIDTH*3/5 - 100, HEIGHT*6/7));
 
         newTextPane(errorPane, fontMed, new Dimension(WIDTH /5 - 35, HEIGHT*4/7));
-
+        newTextPane(inventoryPane, fontMed, new Dimension(WIDTH /3 - 35, HEIGHT*2/7));
         layeredPane.add(textPaneHView, 100);
         layeredPane.add(textPaneHView2, 100);
 
@@ -46,18 +49,24 @@ public class GUI extends JTextPane {
         layeredPane.add(textPaneYView2, 101);
 
         layeredPane.add(errorPane, 286);
-
+        layeredPane.add(inventoryPane, 286);
         layeredPane.setBackground(Color.black);
         layeredPane.setPreferredSize(new Dimension((int) WIDTH, (int) HEIGHT));
         layeredPane.setFocusable(true);
 
         errorPane.setText("errorPane");
+        inventoryPane.setText("invPane");
         Point p = new Point(10, 10);
         Point p2 = new Point(700, 0);
         Point p3 = new Point(700, 250);
         Point p4 = new Point(WIDTH*4/5 - 2, 19);
+        Point p5 = new Point(10, 620);
         errorPane.setForeground(Color.white);
         errorPane.setLocation(p4);
+
+        inventoryPane.setForeground(Color.white);
+        inventoryPane.setLocation(p5);
+
         textPaneHView.setLocation(p);
         textPaneHView2.setLocation(p);
         textPaneXView.setLocation(p2);
@@ -76,6 +85,7 @@ public class GUI extends JTextPane {
         textPaneHView.selectAll();
         panel.setBackground(Color.black);
         errorPane.setBorder(BorderFactory.createLineBorder(Color.white));
+        inventoryPane.setBorder(BorderFactory.createLineBorder(Color.white));
         textPaneXView2.setBorder(BorderFactory.createLineBorder(Color.white));
         textPaneHView.setBorder(BorderFactory.createLineBorder(Color.white));
         textPaneHView2.setBorder(BorderFactory.createLineBorder(Color.white));
@@ -84,6 +94,7 @@ public class GUI extends JTextPane {
         addKeyListenerHere(textPaneHView2);
         addKeyListenerHere(layeredPane);
         addKeyListenerHere(errorPane);
+        addKeyListenerHere(inventoryPane);
         panel.setBackground(Color.black);
         panel.setFocusable(true);
 
@@ -150,6 +161,9 @@ public class GUI extends JTextPane {
                 }
             }
         });
+    }
+    public void inventoryFieldUpdater(String string) { ;
+        inventoryPane.setText(string);
     }
     public void errorFieldUpdater(String string, Color color) { ;
         lines.add(string);

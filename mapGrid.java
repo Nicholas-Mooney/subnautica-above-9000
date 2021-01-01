@@ -83,8 +83,8 @@ public class mapGrid {
                             }
                         }
                     }
-                } catch (Exception e) {
-                    System.out.println("ERROR");
+                } catch (Exception ignored) {
+
                 }
             }
         }
