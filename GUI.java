@@ -149,8 +149,8 @@ public class GUI extends JTextPane {
                     case (KeyEvent.VK_D) -> {
                         RIGHT_HELD = true;
                     }
-                    case (KeyEvent.VK_SPACE) -> {
-
+                    case (KeyEvent.VK_G) -> {
+                        MainLoop.input = "g";
                     }
                     /*
                     case () -> {
