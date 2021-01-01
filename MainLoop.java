@@ -1,5 +1,10 @@
+import com.sun.tools.javac.Main;
+
 import java.awt.*;
 import java.util.*;
+import java.lang.Math;
+
+import static java.lang.Math.abs;
 
 public class MainLoop {
     public static Random rand = new Random();
@@ -13,16 +18,17 @@ public class MainLoop {
     public static int viewportY = 12;
 
     public static int count = 0; ///THIS
+    public static int dayCount = 1200;
 
     public static String input = "starting_input";
+    public static playerInv Inv = new playerInv();
+    public static mapGrid map = new mapGrid(1000);
+    public static String direction = "N";
 
     public static void main(String[] args) {
         //game variables
         boolean running = true;
-        mapGrid map = new mapGrid(1000);
-        playerInv Inv = new playerInv();
         Inv.addItem("kyanite");
-
 
         //game loop
         while (running) {
@@ -31,6 +37,13 @@ public class MainLoop {
             processInput(map);
             input = "";
             gui.inventoryFieldUpdater("hello vietnam" + Inv.retString());
+            map.mapRefresh();
+
+            //daycount
+            dayCount++;
+            if( dayCount > 3000 ){
+                dayCount = dayCount - 3000;
+            }
       }
     }
     public static void wait(int x) {
@@ -65,7 +78,21 @@ public class MainLoop {
                         //System.out.print("| ");
                     }else {
                         //System.out.print(displayForTile(mapGrid.map[x][y]));
-                        textPane.append(charForTile(mapGrid.map[x][y]) + " ", colorForTile(mapGrid.map[x][y]));
+                        int dx = abs(px - x);
+                        int dy = abs(py - y);
+                        int r;
+                        if(dx <= 1 && dy <= 1){
+                            r = 1;
+                        }else if ((dx <= 2 && dy <= 2) && !(dx == 2 && dy == 2)){
+                            r = 2;
+                        }else if((dx == 2 && dy == 2) || (dx == 3 && dy <= 1) || (dy == 3 && dx <= 1)){
+                            r =3;
+                        }else if((dx == 2 && dy == 3) || (dx == 3 && dy == 2)  || (dx == 4 && dy <= 1) || (dy == 4 && dx <= 1)){
+                            r =4;
+                        }else{
+                            r = 5;
+                        }
+                        textPane.append(charForTile(mapGrid.map[x][y]) + " ", colorForTile(mapGrid.map[x][y], y, r));
                     }
                 }
             }
@@ -80,27 +107,35 @@ public class MainLoop {
         //these functions detect the HELD values from gui, turned off by key release signals
         if (GUI.UP_HELD && !GUI.DOWN_HELD && !GUI.LEFT_HELD && !GUI.RIGHT_HELD) {
             MainLoop.input = "w";
+            MainLoop.direction = "N";
         }
         if (!GUI.UP_HELD && GUI.DOWN_HELD && !GUI.LEFT_HELD && !GUI.RIGHT_HELD) {
             MainLoop.input = "s";
+            MainLoop.direction = "S";
         }
         if (!GUI.UP_HELD && !GUI.DOWN_HELD && !GUI.LEFT_HELD && GUI.RIGHT_HELD) {
             MainLoop.input = "d";
+            MainLoop.direction = "E";
         }
         if (!GUI.UP_HELD && !GUI.DOWN_HELD && GUI.LEFT_HELD && !GUI.RIGHT_HELD) {
             MainLoop.input = "a";
+            MainLoop.direction = "W";
         }
         if (GUI.UP_HELD && !GUI.DOWN_HELD && !GUI.LEFT_HELD && GUI.RIGHT_HELD) {
-            MainLoop.input = "e";
+            MainLoop.input = "wd";
+            MainLoop.direction = "NE";
         }
         if (GUI.UP_HELD && !GUI.DOWN_HELD && GUI.LEFT_HELD && !GUI.RIGHT_HELD) {
-            MainLoop.input = "q";
+            MainLoop.input = "wa";
+            MainLoop.direction = "NW";
         }
         if (!GUI.UP_HELD && GUI.DOWN_HELD && !GUI.LEFT_HELD && GUI.RIGHT_HELD) {
-            MainLoop.input = "c";
+            MainLoop.input = "sd";
+            MainLoop.direction = "SE";
         }
         if (!GUI.UP_HELD && GUI.DOWN_HELD && GUI.LEFT_HELD && !GUI.RIGHT_HELD) {
-            MainLoop.input = "z";
+            MainLoop.input = "sa";
+            MainLoop.direction = "SW";
         }
 
         //apply gravity
@@ -121,22 +156,23 @@ public class MainLoop {
         }
 
         //DIAGONAL MOVERS
-        if (input.equals("e")) {
+        if (input.equals("wd")) {
             playerX++;
             playerY--;
         }
-        if (input.equals("q")) {
+        if (input.equals("wa")) {
             playerY--;
             playerX--;
         }
-        if (input.equals("c")) {
+        if (input.equals("sd")) {
             playerX++;
             playerY++;
         }
-        if (input.equals("z")) {
+        if (input.equals("sa")) {
             playerY++;
             playerX--;
         }
+        processAction(map);
         unmover(map);
     }
     public static void unmover(mapGrid map){
@@ -191,22 +227,22 @@ public class MainLoop {
                 playerY++;
             }
             //going up into air
-            if (input.equals("e") && (map.map[playerX][playerY].tileType.equals("air"))) {
+            if (input.equals("wd") && (map.map[playerX][playerY].tileType.equals("air"))) {
                 playerY++;
                 playerX--;
             }
             //going up into solid
-            if (input.equals("e") && !(map.map[playerX][playerY].canMove())) {
+            if (input.equals("wd") && !(map.map[playerX][playerY].canMove())) {
                 playerY++;
                 playerX--;
             }
             //going up into air
-            if (input.equals("q") && (map.map[playerX][playerY].tileType.equals("air"))) {
+            if (input.equals("wa") && (map.map[playerX][playerY].tileType.equals("air"))) {
                 playerY++;
                 playerX++;
             }
             //going up into solid
-            if (input.equals("q") && !(map.map[playerX][playerY].canMove())) {
+            if (input.equals("wa") && !(map.map[playerX][playerY].canMove())) {
                 playerY++;
                 playerX++;
             }
@@ -217,11 +253,11 @@ public class MainLoop {
             //going right into solid w/o air
             if ((input.equals("d") && !(map.map[playerX][playerY - 1].tileType.equals("air")) && !(map.map[playerX][playerY].canMove()))){
                 playerX--;
-            } else if ((input.equals("e") && !(map.map[playerX][playerY - 1].tileType.equals("air")) && !(map.map[playerX][playerY].canMove()))) {
+            } else if ((input.equals("wd") && !(map.map[playerX][playerY - 1].tileType.equals("air")) && !(map.map[playerX][playerY].canMove()))) {
                 playerX--;
                 playerY++;
             }
-            else if ((input.equals("c") && !(map.map[playerX][playerY - 1].tileType.equals("air")) && !(map.map[playerX][playerY].canMove()))) {
+            else if ((input.equals("sd") && !(map.map[playerX][playerY - 1].tileType.equals("air")) && !(map.map[playerX][playerY].canMove()))) {
                 playerX--;
                 playerY--;
             }
@@ -229,11 +265,11 @@ public class MainLoop {
             //going left into solid w/o air
             else if ((input.equals("a") && !(map.map[playerX][playerY - 1].tileType.equals("air")) && !(map.map[playerX][playerY].canMove()))) {
                 playerX++;
-            } else if ((input.equals("z") && !(map.map[playerX][playerY - 1].tileType.equals("air")) && !(map.map[playerX][playerY].canMove()))) {
+            } else if ((input.equals("sa") && !(map.map[playerX][playerY - 1].tileType.equals("air")) && !(map.map[playerX][playerY].canMove()))) {
                 playerX++;
                 playerY--;
             }
-            else if ((input.equals("q") && !(map.map[playerX][playerY - 1].tileType.equals("air")) && !(map.map[playerX][playerY].canMove()))) {
+            else if ((input.equals("wa") && !(map.map[playerX][playerY - 1].tileType.equals("air")) && !(map.map[playerX][playerY].canMove()))) {
                 playerX++;
                 playerY++;
             }
@@ -244,6 +280,41 @@ public class MainLoop {
             }
         }
     };
+    public static void processAction(mapGrid map){
+        if(MainLoop.input.equals("g")){
+            System.out.print("g)");
+            //check for something to grab
+            //then change map or entity list / amend inv
+            if(         map.map[playerX][playerY].tileType.equals("fruit")){
+                MainLoop.map.map[playerX][playerY].tileType = "water";
+                MainLoop.Inv.addItem("fruit");
+            }else if(   map.map[playerX + 1][playerY].tileType.equals("fruit")){
+                MainLoop.map.map[playerX + 1][playerY].tileType = "water";
+                MainLoop.Inv.addItem("fruit");
+            }else if(   map.map[playerX + 1][playerY + 1].tileType.equals("fruit")){
+                MainLoop.map.map[playerX + 1][playerY + 1].tileType = "water";
+                MainLoop.Inv.addItem("fruit");
+            }else if(   map.map[playerX+ 1][playerY - 1].tileType.equals("fruit")){
+                MainLoop.map.map[playerX + 1][playerY - 1].tileType = "water";
+                MainLoop.Inv.addItem("fruit");
+            }else if(   map.map[playerX][playerY - 1].tileType.equals("fruit")){
+                MainLoop.map.map[playerX][playerY - 1].tileType = "water";
+                MainLoop.Inv.addItem("fruit");
+            }else if(map.map[playerX][playerY + 1].tileType.equals("fruit")){
+                MainLoop.map.map[playerX][playerY + 1].tileType = "water";
+                MainLoop.Inv.addItem("fruit");
+            }else if(map.map[playerX - 1][playerY].tileType.equals("fruit")){
+                MainLoop.map.map[playerX - 1][playerY].tileType = "water";
+                MainLoop.Inv.addItem("fruit");
+            }else if(map.map[playerX - 1][playerY + 1].tileType.equals("fruit")){
+                MainLoop.map.map[playerX - 1][playerY + 1].tileType = "water";
+                MainLoop.Inv.addItem("fruit");
+            }else if(map.map[playerX - 1][playerY - 1].tileType.equals("fruit")){
+                MainLoop.map.map[playerX - 1][playerY - 1].tileType = "water";
+                MainLoop.Inv.addItem("fruit");
+            }
+        }
+    }
 
     //display functions
     public static void displayOld() {
@@ -277,26 +348,53 @@ public class MainLoop {
                 return '$';
             case "brain":
                 return '@';
+            case "fruit":
+                return '*';
             default:
                 return '!';
         }
     }
-    public static Color colorForTile(tileSet tile){
+    public static Color colorForTile(tileSet tile, int y, int r){
+        double daylight = MainLoop.dayCount/3000.0;
+        daylight = (Math.sin(daylight * 2 * Math.PI) + 1) / 2.0;
+
+        double elevation = y;
+        if(elevation >= 100){
+            elevation = 0;
+        }
+        double m1 = daylight * (100 - elevation) / 100.0;
+        double m2 = 0;
+        if(r <= 4){
+            if(r == 1){
+                m2 = 0.90;
+            }else if ( r == 2){
+                m2 = 0.70;
+            }else if ( r == 3){
+                m2 = 0.50;
+            }else if ( r == 4){
+                m2 = 0.30;
+            }
+        }
+        double m = Math.max(m1, m2);
+
+
         switch(tile.tileType){
             case "air":
-                return Color.white;
+                return new Color((int) (m *  220), (int) (m * 200),(int) (m *    160));
             case "water":
-                return Color.BLUE;
+                return new Color((int) (m *  0),(int) (m *  60),(int) (m *  135));
             case "earth":
-                return new Color(87, 71, 46);
+                return new Color((int) (m *  160), (int) (m *  131), (int) (m *  46));
             case "ore":
-                return Color.GRAY;
+                return new Color((int) (m *  142), (int) (m *  122), (int) (m *  102));
             case "kelp":
-                return Color.GREEN;
+                return new Color((int) (m *  50), (int) (m *  220), (int) (m *  100));
             case "brain":
-                return Color.pink;
+                return new Color((int) (m *  250),(int) (m *   100), (int) (m *  120));
+            case "fruit":
+                return new Color((int) (m *  250), (int) (m *  250), (int) (m *  0));
             default:
-                return Color.RED;
+                return new Color((int)( m *  255),(int) (m *   0), (int) (m *  0));
         }
     }
 }
