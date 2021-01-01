@@ -53,7 +53,6 @@ public class mapGrid {
 
         //labels tiles ore
         int OreFrequency = 50;//(heigher = rarer)
-
         for(int y = 0; y < maxY; y++){
             for(int x = 0; x < maxX; x++){
                 if(map[x][y].tileType.equals("earth")) {
@@ -63,7 +62,6 @@ public class mapGrid {
                 }
             }
         }
-
 
         //lay down kelp
         int PlantFrequency = 5;//(heigher = rarer)
@@ -100,13 +98,37 @@ public class mapGrid {
                         }
                     }
                 } catch (Exception e) {
-                    System.out.println("ERROR");
+                    //System.out.println("ERROR");
                 }
             }
         }
 
     }
+    public void mapRefresh(){
+        for(int y = 0; y < maxY; y++){
+            for(int x = 0; x < maxX; x++){
+                int kelpFruitFreq = 2000;
+                int kelpGrowFreq = 2000;
 
+                //kelp fruit
+                try {
+                    if (map[x][y - 1].tileType.equals("water") && map[x][y].tileType.equals("kelp")  && map[x][y + 1].tileType.equals("kelp")) {
+                        if (rand.nextInt(kelpFruitFreq) == 0) {
+                            map[x][y].tileType = "fruit";
+                        }
+                    }
+                } catch (Exception e) {}
+                //kelp grow
+                try {
+                    if (map[x][y - 1].tileType.equals("water") && map[x][y].tileType.equals("kelp")) {
+                        if (rand.nextInt(kelpGrowFreq) == 0) {
+                            map[x][y-1].tileType = "kelp";
+                        }
+                    }
+                } catch (Exception e) {}
+            }
+        }
+    }
 
 
 
