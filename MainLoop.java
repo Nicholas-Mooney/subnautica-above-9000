@@ -469,7 +469,7 @@ public class MainLoop {
         daylight = (Math.sin(daylight * 2 * Math.PI) + 1) / 2.0;
         double elevation = y;
         if (elevation >= 100) {
-            elevation = 0;
+            elevation = 100;
         }
         double m1 = daylight * (100 - elevation) / 100.0;
 
@@ -493,13 +493,13 @@ public class MainLoop {
             int dx = Math.abs(x - xArr.get(i));
             int dy = Math.abs(y - yArr.get(i));
             double radius = pow(((pow(dx, 2)) + (pow(dy, 2))), 0.5);
-            pr[i] = pow(pArr.get(i) / radius, (2))/radius;
+            pr[i] = pow(pArr.get(i) / radius, (2))/(radius*radius);
         }
 
         //take highest
         double xmax = 0;
         if (pr.length != 0) {
-            System.out.print("pr" + pr.length);
+            //System.out.print("pr" + pr.length);
             xmax = pr[0];
             for (int h = 0; h < pr.length - 1; h++) {
                 xmax = Math.max(xmax, pr[h + 1]);
