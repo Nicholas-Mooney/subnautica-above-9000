@@ -25,7 +25,7 @@ public class MainLoop {
         while (running) {
             wait(100);
             display(map);
-            processInput();
+            processInput(map);
             input = "";
       }
     }
@@ -36,7 +36,6 @@ public class MainLoop {
 
         }
     }
-    //THESE
     public static void display(mapGrid map) {
         if (count == 0) {
             displayRoomX(gui.textPaneHView2, gui.textPaneHView, map);
@@ -75,7 +74,7 @@ public class MainLoop {
 
 
     //input functions
-    public static void processInput() {
+    public static void processInput(mapGrid map) {
         if (input.equals("a")) {
             playerX--;
         }
@@ -88,9 +87,9 @@ public class MainLoop {
         if (input.equals("w")) {
             playerY--;
         }
-        unmover();
+        unmover(map);
     }
-    public static void unmover(){
+    public static void unmover(mapGrid map){
         if(playerX >= mapGrid.maxX || playerY >= mapGrid.maxY || playerY < 0 || playerX < 0){
             if (input.equals("a")) {
                 playerX++;
@@ -104,6 +103,9 @@ public class MainLoop {
             if (input.equals("w")) {
                 playerY++;
             }
+        }
+        if(input.equals("w")&& (map.map[playerX][playerY].tileType.equals("air"))){
+            playerY++;
         }
     };
 
