@@ -6,7 +6,7 @@ public class MainLoop {
     public static Scanner sc = new Scanner(System.in);
     public static GUI gui = new GUI(); //THIS
     public static int playerX = 20;
-    public static int playerY = 15;
+    public static int playerY = 5;
     public static int map_sizeX = 1000;
     public static int map_sizeY = 1000;
     public static int viewportX = 17;
@@ -23,7 +23,7 @@ public class MainLoop {
 
         //game loop
         while (running) {
-            wait(100);
+            wait(50);
             display(map);
             processInput(map);
             input = "";
@@ -192,6 +192,10 @@ public class MainLoop {
                 return '=';
             case "ore":
                 return 'o';
+            case "kelp":
+                return '$';
+            case "brain":
+                return '@';
             default:
                 return '!';
         }
@@ -206,6 +210,10 @@ public class MainLoop {
                 return new Color(87, 71, 46);
             case "ore":
                 return Color.GRAY;
+            case "kelp":
+                return Color.GREEN;
+            case "brain":
+                return Color.pink;
             default:
                 return Color.RED;
         }

@@ -29,9 +29,6 @@ public class mapGrid {
 
         }
 
-
-
-
         //labels tiles air/water based on integer
         for(int y = 0; y < maxY; y++){
             for(int x = 0; x < maxX; x++){
@@ -51,13 +48,10 @@ public class mapGrid {
                 if(y > 20 + heightmap[x]){
                     map[x][y].tileType = "earth";
                 }
-
-
             }
         }
 
         //labels tiles ore
-
         int OreFrequency = 50;//(heigher = rarer)
 
         for(int y = 0; y < maxY; y++){
@@ -66,6 +60,47 @@ public class mapGrid {
                     if (rand.nextInt(OreFrequency) == 0) {
                         map[x][y].tileType = "ore";
                     }
+                }
+            }
+        }
+
+
+        //lay down kelp
+        int PlantFrequency = 5;//(heigher = rarer)
+        for(int y = 0; y < maxY; y++){
+            for(int x = 0; x < maxX; x++){
+                try {
+                    if (map[x][y + 1].tileType.equals("earth") && map[x][y].tileType.equals("water")) {
+                        if (rand.nextInt(PlantFrequency) == 0) {
+                            map[x][y].tileType = "kelp";
+
+                            int kelpType = rand.nextInt(6) + 1;
+
+                            for (int z = 1; z < kelpType; z++) {
+                                if (map[x][y - z].tileType.equals("water")) {
+                                    map[x][y - z].tileType = "kelp";
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    System.out.println("ERROR");
+                }
+            }
+        }
+
+        int BrainFrequency = 10;//(heigher = rarer)
+        for(int y = 0; y < maxY; y++){
+            for(int x = 0; x < maxX; x++){
+                try {
+                    if (map[x][y + 1].tileType.equals("earth") && map[x][y].tileType.equals("water")) {
+                        if (rand.nextInt(BrainFrequency) == 0) {
+                            map[x][y].tileType = "brain";
+
+                        }
+                    }
+                } catch (Exception e) {
+                    System.out.println("ERROR");
                 }
             }
         }
