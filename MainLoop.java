@@ -77,15 +77,19 @@ public class MainLoop {
         int py = playerY;
         int px = playerX;
 
-        //add entity data
+        //add light sources location and power
         ArrayList<Integer> xArr = new ArrayList<Integer>();
         ArrayList<Integer> yArr = new ArrayList<Integer>();
         ArrayList<Integer> pArr = new ArrayList<Integer>();
+
+        //add all entities
+        //TODO change to entities loaded
         for (int h = 0; h < entities.size(); h++) {
             xArr.add(entities.get(h).x);
             yArr.add(entities.get(h).y);
             pArr.add(entities.get(h).lightPower);
         }
+        //TODO add tile checker for light sources
 
         //all x/y on screen
         for (int y = py - viewportY; y <= py + viewportY; y++) {
@@ -104,26 +108,15 @@ public class MainLoop {
                     if (x >= mapGrid.maxX || y >= mapGrid.maxY || y < 0 || x < 0) {
                         textPane.append("| ", Color.white);
 
-                        //add to;es
+                        //add  tiles
                     } else {
-                        //player radius calc
-                        int dx = abs(px - x);
-                        int dy = abs(py - y);
-                        int r;
-                        if (dx <= 1 && dy <= 1) {
-                            r = 1;
-                        } else if ((dx <= 2 && dy <= 2) && !(dx == 2 && dy == 2)) {
-                            r = 2;
-                        } else if ((dx == 2 && dy == 2) || (dx == 3 && dy <= 1) || (dy == 3 && dx <= 1)) {
-                            r = 3;
-                        } else if ((dx == 2 && dy == 3) || (dx == 3 && dy == 2) || (dx == 4 && dy <= 1) || (dy == 4 && dx <= 1)) {
-                            r = 4;
-                        } else {
-                            r = 5;
-                        }
+                        //new add player to light calc
+                        xArr.add(playerX);
+                        yArr.add(playerY);
+                        pArr.add(8);
 
                         //add tile
-                        textPane.append(charForTile(mapGrid.map[x][y]) + " ", colorForTile(mapGrid.map[x][y], x, y, r, xArr, yArr, pArr));
+                        textPane.append(charForTile(mapGrid.map[x][y]) + " ", colorForTile(mapGrid.map[x][y], x, y, xArr, yArr, pArr));
                     }
                 }
             }
@@ -459,11 +452,17 @@ public class MainLoop {
                 return '@';
             case "fruit":
                 return '*';
+            case "mushroom":
+                return '%';
+            case "mushroom2":
+                return '%';
+            case "mushroom3":
+                return '%';
             default:
                 return '!';
         }
     }
-    public static Color colorForTile(tileSet tile, int x, int y, int r, ArrayList<Integer> xArr, ArrayList<Integer> yArr, ArrayList<Integer> pArr) {
+    public static Color colorForTile(tileSet tile, int x, int y, ArrayList<Integer> xArr, ArrayList<Integer> yArr, ArrayList<Integer> pArr) {
         //depth lighting
         double daylight = MainLoop.dayCount / 3000.0;
         daylight = (Math.sin(daylight * 2 * Math.PI) + 1) / 2.0;
@@ -473,19 +472,7 @@ public class MainLoop {
         }
         double m1 = daylight * (100 - elevation) / 100.0;
 
-        //player lighting
-        double m2 = 0;
-        if (r <= 4) {
-            if (r == 1) {
-                m2 = 0.90;
-            } else if (r == 2) {
-                m2 = 0.70;
-            } else if (r == 3) {
-                m2 = 0.50;
-            } else if (r == 4) {
-                m2 = 0.30;
-            }
-        }
+
 
         //entity lighting
         double[] pr = new double[xArr.size()];
@@ -505,8 +492,8 @@ public class MainLoop {
                 xmax = Math.max(xmax, pr[h + 1]);
             }
         }
-        double m = Math.max(m1, m2);
-        m = Math.max(m, xmax);
+
+        double  m = Math.max(m1, xmax);
         if (m > 1) {
             m = 1;
         }
@@ -529,6 +516,12 @@ public class MainLoop {
                 return new Color((int) (m * 250), (int) (m * 100), (int) (m * 120));
             case "fruit":
                 return new Color((int) (m * 250), (int) (m * 250), (int) (m * 0));
+            case "mushroom":
+                return new Color((int) (m * 204), (int) (m * 0), (int) (m * 0));
+            case "mushroom2":
+                return new Color((int) (m * 254), (int) (m * 250), (int) (m * 0));
+            case "mushroom3":
+                return new Color((int) (m * 250), (int) (m * 51), (int) (m * 152));
             default:
                 return new Color((int) (m * 255), (int) (m * 0), (int) (m * 0));
         }

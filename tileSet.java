@@ -10,6 +10,9 @@ public class tileSet {
                 || tileType.equals("air")
                 || tileType.equals("brain")
                 || tileType.equals("kelp")
+                || tileType.equals("mushroom")
+                || tileType.equals("mushroom2")
+                || tileType.equals("mushroom3")
                 || tileType.equals("fruit")){
             return true;
         }else{
