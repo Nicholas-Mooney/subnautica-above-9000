@@ -77,15 +77,19 @@ public class MainLoop {
         int py = playerY;
         int px = playerX;
 
-        //add entity data
+        //add light sources location and power
         ArrayList<Integer> xArr = new ArrayList<Integer>();
         ArrayList<Integer> yArr = new ArrayList<Integer>();
         ArrayList<Integer> pArr = new ArrayList<Integer>();
+
+        //add all entities
+        //TODO change to entities loaded
         for (int h = 0; h < entities.size(); h++) {
             xArr.add(entities.get(h).x);
             yArr.add(entities.get(h).y);
             pArr.add(entities.get(h).lightPower);
         }
+        //TODO add tile checker for light sources
 
         //all x/y on screen
         for (int y = py - viewportY; y <= py + viewportY; y++) {
@@ -104,26 +108,15 @@ public class MainLoop {
                     if (x >= mapGrid.maxX || y >= mapGrid.maxY || y < 0 || x < 0) {
                         textPane.append("| ", Color.white);
 
-                        //add to;es
+                        //add  tiles
                     } else {
-                        //player radius calc
-                        int dx = abs(px - x);
-                        int dy = abs(py - y);
-                        int r;
-                        if (dx <= 1 && dy <= 1) {
-                            r = 1;
-                        } else if ((dx <= 2 && dy <= 2) && !(dx == 2 && dy == 2)) {
-                            r = 2;
-                        } else if ((dx == 2 && dy == 2) || (dx == 3 && dy <= 1) || (dy == 3 && dx <= 1)) {
-                            r = 3;
-                        } else if ((dx == 2 && dy == 3) || (dx == 3 && dy == 2) || (dx == 4 && dy <= 1) || (dy == 4 && dx <= 1)) {
-                            r = 4;
-                        } else {
-                            r = 5;
-                        }
+                        //new add player to light calc
+                        xArr.add(playerX);
+                        yArr.add(playerY);
+                        pArr.add(8);
 
                         //add tile
-                        textPane.append(charForTile(mapGrid.map[x][y]) + " ", colorForTile(mapGrid.map[x][y], x, y, r, xArr, yArr, pArr));
+                        textPane.append(charForTile(mapGrid.map[x][y]) + " ", colorForTile(mapGrid.map[x][y], x, y, xArr, yArr, pArr));
                     }
                 }
             }
@@ -169,13 +162,14 @@ public class MainLoop {
 
     public static void entityUpdater() {     //controls entity behaviour
         for (Entity entity : entities) {
+
             if (entity.type.equals("bubble")) {
                 //desynchronizes entity motion by comparing entityTickCount to a value assigned to entity at its birth depending on the tick, instead of updating on the same tick for all entities!
                 if (!entity.hasStartingDivisible) {
                     entity.startingDivisible = entityTickCount % 4;
                     entity.hasStartingDivisible = true;
                 }
-                if (entityTickCount % 4 == entity.startingDivisible) {
+                if (entityTickCount % entity.speed == entity.startingDivisible) {
                     entity.y--;
                 }
                 //dont remove entities while list is iterating
@@ -186,12 +180,95 @@ public class MainLoop {
                     entity.flagForRemoval = true;
                     gui.errorFieldUpdater("BUBBLE COLLECTED", Color.white);
                 }
-            } else if (entity.type.equals("fish")) {
 
-            } else {
+            }
+            else if (entity.type.equals("fish")) {
+                int oldx = entity.x;
+                int oldy = entity.y;
+                entity.AI.x = entity.x;
+                entity.AI.y = entity.y;
+
+                if (5 > Math.sqrt((playerY - entity.y) * (playerY - entity.y) + (playerX - entity.x) * (playerX - entity.x))) {
+                    entity.AI.avoid = true;
+                    entity.AI.xa = playerX;
+                    entity.AI.ya = playerY;
+                    entity.color = Color.white;
+                    entity.speed = 1;
+                } else {
+                    entity.AI.avoid = false;
+                    entity.color = Color.green;
+                    entity.speed = 4;
+
+                }
+
+                if (entityTickCount % entity.speed == 0) {
+                    entity.y = entity.y + entity.AI.getMoveY();
+                    entity.x = entity.x + entity.AI.getMoveX();
+                }
+
+                //out of bounds
+                if (entity.x >= mapGrid.maxX || entity.y >= mapGrid.maxY || entity.x < 0 || entity.y < 0) {
+                    entity.x = oldx;
+                    entity.y = oldy;
+                }
+                //air
+                if (mapGrid.map[entity.x][entity.y].tileType.equals("air")) {
+
+                    entity.y = oldy;
+                }
+                //solid
+                if (!mapGrid.map[entity.x][entity.y].canMove()) {
+                    entity.x = oldx;
+                    entity.y = oldy;
+                }
+
+            }
+            else if (entity.type.equals("hunter")) {
+                int oldx = entity.x;
+                int oldy = entity.y;
+                entity.AI.x = entity.x;
+                entity.AI.y = entity.y;
+
+                if (7 > Math.sqrt((playerY - entity.y) * (playerY - entity.y) + (playerX - entity.x) * (playerX - entity.x))) {
+                    entity.AI.target = true;
+                    entity.AI.xt = playerX;
+                    entity.AI.yt = playerY;
+                    entity.color = Color.red;
+                    entity.speed = 2;
+                } else {
+                    entity.AI.target = false;
+                    entity.color = Color.blue;
+                    entity.speed = 4;
+
+                }
+
+                if (entityTickCount % entity.speed == 0) {
+                    entity.y = entity.y + entity.AI.getMoveY();
+                    entity.x = entity.x + entity.AI.getMoveX();
+                }
+
+                //out of bounds
+                if (entity.x >= mapGrid.maxX || entity.y >= mapGrid.maxY || entity.x < 0 || entity.y < 0) {
+                    entity.x = oldx;
+                    entity.y = oldy;
+                }
+                //air
+                if (mapGrid.map[entity.x][entity.y].tileType.equals("air")) {
+
+                    entity.y = oldy;
+                }
+                //solid
+                if (!mapGrid.map[entity.x][entity.y].canMove()) {
+                    entity.x = oldx;
+                    entity.y = oldy;
+                }
+
+            }
+            else {
                 System.out.println("Untyped entity present");
             }
         }
+
         //remove flagged entities safely
         for (int x = 0; x < entities.size(); x++) {
             if (entities.get(x).flagForRemoval) {
@@ -207,6 +284,17 @@ public class MainLoop {
                 if (mapGrid.map[x][y].tileType.equals("brain")) {
                     if (rand.nextInt(200) < 1) {
                         entities.add(new Entity("O", "bubble", x, y, Color.white, 5));
+                    }
+                }
+                if (mapGrid.map[x][y].tileType.equals("water")) {
+                    if (entities.size() < 20) {
+                        if (rand.nextInt(10000) == 0) {
+                            entities.add(new Entity("o", "fish", x, y, new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255)), 0));
+                        } else {
+                            if (rand.nextInt(1000) == 0) {
+                                entities.add(new Entity("X", "hunter", x, y, new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255)), 0));
+                            }
+                        }
                     }
                 }
             }
@@ -469,7 +557,7 @@ public class MainLoop {
                 return '!';
         }
     }
-    public static Color colorForTile(tileSet tile, int x, int y, int r, ArrayList<Integer> xArr, ArrayList<Integer> yArr, ArrayList<Integer> pArr) {
+    public static Color colorForTile(tileSet tile, int x, int y, ArrayList<Integer> xArr, ArrayList<Integer> yArr, ArrayList<Integer> pArr) {
         //depth lighting
         double daylight = MainLoop.dayCount / 3000.0;
         daylight = (Math.sin(daylight * 2 * Math.PI) + 1) / 2.0;
@@ -479,19 +567,7 @@ public class MainLoop {
         }
         double m1 = daylight * (100 - elevation) / 100.0;
 
-        //player lighting
-        double m2 = 0;
-        if (r <= 4) {
-            if (r == 1) {
-                m2 = 0.90;
-            } else if (r == 2) {
-                m2 = 0.70;
-            } else if (r == 3) {
-                m2 = 0.50;
-            } else if (r == 4) {
-                m2 = 0.30;
-            }
-        }
+
 
         //entity lighting
         double[] pr = new double[xArr.size()];
@@ -511,8 +587,8 @@ public class MainLoop {
                 xmax = Math.max(xmax, pr[h + 1]);
             }
         }
-        double m = Math.max(m1, m2);
-        m = Math.max(m, xmax);
+
+        double  m = Math.max(m1, xmax);
         if (m > 1) {
             m = 1;
         }

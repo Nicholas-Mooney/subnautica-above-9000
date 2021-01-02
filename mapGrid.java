@@ -137,7 +137,7 @@ public class mapGrid {
             }
 
             //mushroom coral
-            int mushroomFrequency = 20;//(heigher = rarer)
+            int mushroomFrequency = 0;//(heigher = rarer)
             for (int y = 0; y < maxY; y++) {
                 for (int x = 0; x < maxX; x++) {
                     try {
