@@ -4,10 +4,17 @@ import java.util.Random;
 public class playerInv {
 public int numItems = 0;
 public ArrayList<String> items = new ArrayList<String>();
+    public ArrayList<Integer> count = new ArrayList<Integer>();
 
 public void addItem(String item){
     numItems++;
-    items.add(item);
+    if(!items.contains(item)) {
+        items.add(item);
+        count.add(1);
+    }else{
+        int curr = count.get(items.indexOf(item));
+        count.set(items.indexOf(item), curr + 1);
+    }
 }
 public void deleteItem(String item){
     numItems--;
@@ -31,8 +38,8 @@ public void die(){
 
 public String retString(){
     String ret = "";
-    for(int i = 0; i < numItems; i++){
-        ret = ret + '\n' + i + ": " + items.get(i);
+    for(int i = 0; i < items.size(); i++){
+        ret = ret + '\n' + items.get(i) + ": "+ count.get(i);
     }
     return ret;
 }
