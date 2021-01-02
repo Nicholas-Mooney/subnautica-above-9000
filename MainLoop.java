@@ -18,7 +18,7 @@ public class MainLoop {
     public static int map_sizeY = 1000;
     public static int viewportX = 17;
     public static int viewportY = 12;
-
+    public static boolean grabbing = false; //NEW
     public static int count = 0; ///THIS
     public static int dayCount = 1200;
     public static int mineCounter = 0;
@@ -30,8 +30,13 @@ public class MainLoop {
     public static String direction = "N";
     public static int playerLightVal = 8;
 
-    public static ArrayList<Entity> entities = new ArrayList<Entity>();
+    public static int health = 10;
+    public static int health_max = 10;
+    public static int oxygen = 100;
+    public static int oxygen_max = 100;
 
+    public static ArrayList<Entity> entities = new ArrayList<Entity>();
+    public static ArrayList<Entity> entitiesR = new ArrayList<Entity>();
     public static void main(String[] args) {
         //game variables
         boolean running = true;
@@ -39,7 +44,8 @@ public class MainLoop {
 
         //game loop
         while (running) {
-            wait(50);
+            wait(25);
+            entityRenderUpdater();
             display(map);
             processInput(map);
             input = "";
@@ -53,6 +59,7 @@ public class MainLoop {
             if (dayCount > 3000) {
                 dayCount = dayCount - 3000;
             }
+            gui.textPane.setText("Oxygen: " + oxygen + "/" + oxygen_max + " HP: " + health + "/" + health_max);
         }
     }
 
@@ -87,10 +94,10 @@ public class MainLoop {
 
         //add all entities
         //TODO change to entities loaded
-        for (int h = 0; h < entities.size(); h++) {
-            xArr.add(entities.get(h).x);
-            yArr.add(entities.get(h).y);
-            pArr.add(entities.get(h).lightPower);
+        for (int h = 0; h < entitiesR.size(); h++) {
+            xArr.add(entitiesR.get(h).x);
+            yArr.add(entitiesR.get(h).y);
+            pArr.add(entitiesR.get(h).lightPower);
         }
         //TODO add tile checker for light sources
 
@@ -130,7 +137,7 @@ public class MainLoop {
     }
 
     public static boolean checkEntity(int x, int y) {
-        for (Entity entity : entities) {
+        for (Entity entity : entitiesR) {
             if (entity.x == x && entity.y == y) {
                 return true;
             }
@@ -232,7 +239,7 @@ public class MainLoop {
                 entity.AI.x = entity.x;
                 entity.AI.y = entity.y;
 
-                if (7 > Math.sqrt((playerY - entity.y) * (playerY - entity.y) + (playerX - entity.x) * (playerX - entity.x))) {
+                if (10 > Math.sqrt((playerY - entity.y) * (playerY - entity.y) + (playerX - entity.x) * (playerX - entity.x))) {
                     entity.AI.target = true;
                     entity.AI.xt = playerX;
                     entity.AI.yt = playerY;
@@ -280,18 +287,29 @@ public class MainLoop {
             }
         }
     }
+    public static void entityRenderUpdater() {
+        entitiesR.clear();
+        for (Entity entity : entities) {
+            if (entity.x < playerX + viewportX + 5 && entity.x > playerX - viewportX - 5) {
+                if (entity.y < playerY + viewportY + 5 && entity.y > playerY - viewportY - 5) {
+                    entitiesR.add(entity);
+                }
+            }
+        }
 
+        gui.errorFieldUpdater("R: " + entitiesR.size() + " T: " + entities.size(), Color.white);
+    }
     public static void entitySpawner() {
         for (int x = 0; x < mapGrid.maxX; x++) {
             for (int y = 0; y < mapGrid.maxY; y++) {
                 if (mapGrid.map[x][y].tileType.equals("brain")) {
                     if (rand.nextInt(200) < 1) {
-                        entities.add(new Entity("O", "bubble", x, y, Color.white, 5));
+                        entities.add(new Entity("O", "bubble", x, y, Color.white, 0));
                     }
                 }
                 if (mapGrid.map[x][y].tileType.equals("water")) {
-                    if (entities.size() < 20) {
-                        if (rand.nextInt(10000) == 0) {
+                    if (entities.size() < 100) {
+                        if (rand.nextInt(1000) == 0) {
                             entities.add(new Entity("o", "fish", x, y, new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255)), 0));
                         } else {
                             if (rand.nextInt(1000) == 0) {
@@ -481,10 +499,22 @@ public class MainLoop {
         }
     }
     public static void processAction(mapGrid map) {
-        if (MainLoop.input.equals("g")) {
+        if (grabbing) {
             System.out.print("g)");
             //check for something to grab
             //then change map or entity list / amend inv
+            for (Entity entity : entitiesR) {
+                if (entity.type.equals("fish")) {
+                    if (entity.x <= playerX + 1 && entity.x >= playerX - 1) {
+                        if (entity.y <= playerY + 1 && entity.y >= playerY - 1) {
+                            entity.flagForRemoval = true;
+                            MainLoop.Inv.addItem("Fish");
+                        }
+                    }
+                }
+            }
+
+
             if (map.map[playerX][playerY].tileType.equals("fruit")) {
                 MainLoop.map.map[playerX][playerY].tileType = "water";
                 MainLoop.Inv.addItem("fruit");
@@ -731,6 +761,8 @@ public class MainLoop {
         else{
             mineCounter = 0;
         }
+
+        grabbing = false;
     }
     public static void GetMined(int x, int y){
         MainLoop.Inv.addItem(MainLoop.map.map[x][y].tileType);

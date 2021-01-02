@@ -24,10 +24,15 @@ public class GUI extends JTextPane {
     JTextAreaA textPaneXView = new JTextAreaA();
     JTextAreaA textPaneXView2 = new JTextAreaA();
 
+    JTextPane textPane = new JTextPane();
+
+
+
     static int WIDTH = 1295;
     static int HEIGHT = 695;
     Font fontMed = new Font("Monospaced", Font.BOLD, 14);
     public GUI(){
+        
         newTextPane(textPaneXView, fontMed, new Dimension(300, 250));
         newTextPane(textPaneXView2, fontMed, new Dimension(300, 250));
 
@@ -54,6 +59,8 @@ public class GUI extends JTextPane {
         layeredPane.setPreferredSize(new Dimension((int) WIDTH, (int) HEIGHT));
         layeredPane.setFocusable(true);
 
+        layeredPane.add(textPane);
+
         errorPane.setText("errorPane");
         inventoryPane.setText("invPane");
         Point p = new Point(10, 10);
@@ -61,12 +68,16 @@ public class GUI extends JTextPane {
         Point p3 = new Point(700, 250);
         Point p4 = new Point(WIDTH*4/5 - 2, 19);
         Point p5 = new Point(700, 10);
+        Point p6 = new Point(10, 700);
         errorPane.setForeground(Color.white);
         errorPane.setLocation(p4);
-
+        textPane.setLocation(p6);
+        textPane.setSize(new Dimension(500, 30));
+        textPane.setBackground(Color.black);
         inventoryPane.setForeground(Color.white);
         inventoryPane.setLocation(p5);
-
+        textPane.setFont(fontMed);
+        textPane.setForeground(Color.white);
         textPaneHView.setLocation(p);
         textPaneHView2.setLocation(p);
         textPaneXView.setLocation(p2);
@@ -159,7 +170,8 @@ public class GUI extends JTextPane {
                         MainLoop.displayAll = !MainLoop.displayAll;
                     }
                     case (KeyEvent.VK_SPACE) -> {
-                        MainLoop.entities.add(new Entity("O", "bubble", MainLoop.playerX, MainLoop.playerY + 1, Color.white, 1));
+                        //MainLoop.input = "g";
+                        MainLoop.grabbing = true;
                     }
                     /*
                     case () -> {
