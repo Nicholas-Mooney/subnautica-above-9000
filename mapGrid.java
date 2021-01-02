@@ -17,8 +17,8 @@ public class mapGrid {
             for (int x = 0; x < maxX; x++) {
 
                 double slope = 0.25; //slope of the terrain before modifications (slope downwards)
-                double sin_weight = 0; //heigher values will amke the terrain look like a sin graph
-                double noise_weight = 0; ///heigher values makes the terrain more noisier and random
+                double sin_weight = 10; //heigher values will amke the terrain look like a sin graph
+                double noise_weight = 1; ///heigher values makes the terrain more noisier and random
 
                 //adds random noise
                 heightmap[x] = noise_weight * SimplexNoise.noise(rand.nextInt(10), 0);
@@ -128,6 +128,73 @@ public class mapGrid {
                             if (rand.nextInt(BrainFrequency) == 0) {
                                 map[x][y].tileType = "brain";
 
+                            }
+                        }
+                    } catch (Exception e) {
+                        //System.out.println("ERROR");
+                    }
+                }
+            }
+
+            //mushroom coral
+            int mushroomFrequency = 20;//(heigher = rarer)
+            for (int y = 0; y < maxY; y++) {
+                for (int x = 0; x < maxX; x++) {
+                    try {
+                        if (map[x][y + 1].tileType.equals("earth") && map[x][y].tileType.equals("water")) {
+                            //mushroom type1
+                            if (rand.nextInt(mushroomFrequency) == 0) {
+                                String mushroomType = "mushroom";
+                                switch (rand.nextInt(3)) {
+                                    case (0):
+                                        mushroomType = "mushroom";
+                                        break;
+                                    case (1):
+                                        mushroomType = "mushroom2";
+                                        break;
+                                    case (2):
+                                        mushroomType = "mushroom3";
+                                        break;
+                                }
+                                if (map[x][y].tileType.equals("water")) {
+                                    map[x][y].tileType = mushroomType;
+                                }
+                                if (map[x][y - 1].tileType.equals("water")) {
+                                    map[x][y - 1].tileType = mushroomType;
+                                }
+                                if (map[x][y - 2].tileType.equals("water")) {
+                                    map[x][y - 2].tileType = mushroomType;
+                                }
+                                if (map[x][y - 3].tileType.equals("water")) {
+                                    map[x][y - 3].tileType = mushroomType;
+                                }
+                                if (map[x - 1][y - 3].tileType.equals("water")) {
+                                    map[x - 1][y - 3].tileType = mushroomType;
+                                }
+                                if (map[x - 2][y - 3].tileType.equals("water")) {
+                                    map[x - 2][y - 3].tileType = mushroomType;
+                                }
+                                if (map[x + 1][y - 3].tileType.equals("water")) {
+                                    map[x + 1][y - 3].tileType = mushroomType;
+                                }
+                                if (map[x + 2][y - 3].tileType.equals("water")) {
+                                    map[x + 2][y - 3].tileType = mushroomType;
+                                }
+                                if (map[x + 2][y - 2].tileType.equals("water")) {
+                                    map[x + 2][y - 2].tileType = mushroomType;
+                                }
+                                if (map[x - 2][y - 2].tileType.equals("water")) {
+                                    map[x - 2][y - 2].tileType = mushroomType;
+                                }
+                                if (map[x + 1][y - 4].tileType.equals("water")) {
+                                    map[x + 1][y - 4].tileType = mushroomType;
+                                }
+                                if (map[x][y - 4].tileType.equals("water")) {
+                                    map[x][y - 4].tileType = mushroomType;
+                                }
+                                if (map[x - 1][y - 4].tileType.equals("water")) {
+                                    map[x - 1][y - 4].tileType = mushroomType;
+                                }
                             }
                         }
                     } catch (Exception e) {

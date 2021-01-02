@@ -152,6 +152,9 @@ public class GUI extends JTextPane {
                     case (KeyEvent.VK_G) -> {
                         MainLoop.input = "g";
                     }
+                    case (KeyEvent.VK_Q) -> {
+                        MainLoop.input = "q";
+                    }
                     case (KeyEvent.VK_F1) -> {
                         MainLoop.displayAll = !MainLoop.displayAll;
                     }
