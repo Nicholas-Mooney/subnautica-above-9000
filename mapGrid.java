@@ -1,4 +1,3 @@
-import java.awt.*;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -11,10 +10,6 @@ public class mapGrid {
 
     mapGrid(int seed){
         boolean regular = true;
-        MainLoop.gui.errorFieldUpdater("test", Color.white);
-        MainLoop.gui.errorFieldUpdater("f1 -> disableLighting", Color.white);
-        MainLoop.gui.errorFieldUpdater("G -> grab", Color.white);
-        MainLoop.gui.errorFieldUpdater("AWSD -> move", Color.white);
         if (regular) {
             String tileType;
 
@@ -70,12 +65,7 @@ public class mapGrid {
                 }
             }
 
-            //lay down kelp
-
-
-
-
-
+            //cellular automata lays down cave network
             boolean[][] cellmap = new boolean[maxX][maxY];
             for (int x = 0; x < maxX; x++) {
                 for (int y = 0; y < maxY; y++) {
@@ -104,6 +94,8 @@ public class mapGrid {
                     }
                 }
             }
+
+            //kelp
             int PlantFrequency = 5;//(heigher = rarer)
             for (int y = 0; y < maxY; y++) {
                 for (int x = 0; x < maxX; x++) {
@@ -127,6 +119,7 @@ public class mapGrid {
                 }
             }
 
+            //brain coral
             int BrainFrequency = 10;//(heigher = rarer)
             for (int y = 0; y < maxY; y++) {
                 for (int x = 0; x < maxX; x++) {
@@ -142,6 +135,77 @@ public class mapGrid {
                     }
                 }
             }
+
+            //mushroom coral
+            int mushroomFrequency = 20;//(heigher = rarer)
+            for (int y = 0; y < maxY; y++) {
+                for (int x = 0; x < maxX; x++) {
+                    try {
+                        if (map[x][y + 1].tileType.equals("earth") && map[x][y].tileType.equals("water")) {
+                            //mushroom type1
+                            if (rand.nextInt(mushroomFrequency) == 0) {
+                                String mushroomType = "mushroom";
+                                switch (rand.nextInt(3)) {
+                                    case (0):
+                                        mushroomType = "mushroom";
+                                        break;
+                                    case (1):
+                                        mushroomType = "mushroom2";
+                                        break;
+                                    case (2):
+                                        mushroomType = "mushroom3";
+                                        break;
+                                }
+                                if (map[x][y].tileType.equals("water")) {
+                                    map[x][y].tileType = mushroomType;
+                                }
+                                if (map[x][y - 1].tileType.equals("water")) {
+                                    map[x][y - 1].tileType = mushroomType;
+                                }
+                                if (map[x][y - 2].tileType.equals("water")) {
+                                    map[x][y - 2].tileType = mushroomType;
+                                }
+                                if (map[x][y - 3].tileType.equals("water")) {
+                                    map[x][y - 3].tileType = mushroomType;
+                                }
+                                if (map[x - 1][y - 3].tileType.equals("water")) {
+                                    map[x - 1][y - 3].tileType = mushroomType;
+                                }
+                                if (map[x - 2][y - 3].tileType.equals("water")) {
+                                    map[x - 2][y - 3].tileType = mushroomType;
+                                }
+                                if (map[x + 1][y - 3].tileType.equals("water")) {
+                                    map[x + 1][y - 3].tileType = mushroomType;
+                                }
+                                if (map[x + 2][y - 3].tileType.equals("water")) {
+                                    map[x + 2][y - 3].tileType = mushroomType;
+                                }
+                                if (map[x + 2][y - 2].tileType.equals("water")) {
+                                    map[x + 2][y - 2].tileType = mushroomType;
+                                }
+                                if (map[x - 2][y - 2].tileType.equals("water")) {
+                                    map[x - 2][y - 2].tileType = mushroomType;
+                                }
+                                if (map[x + 1][y - 4].tileType.equals("water")) {
+                                    map[x + 1][y - 4].tileType = mushroomType;
+                                }
+                                if (map[x][y - 4].tileType.equals("water")) {
+                                    map[x][y - 4].tileType = mushroomType;
+                                }
+                                if (map[x - 1][y - 4].tileType.equals("water")) {
+                                    map[x - 1][y - 4].tileType = mushroomType;
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        //System.out.println("ERROR");
+                    }
+                }
+            }
+
+
+
+
         } else {
             maxX = 100;
             maxY = 100;
