@@ -2,8 +2,8 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class mapGrid {
-    public static int maxX = 200;
-    public static int maxY = 500;
+    public static int maxX = 400;
+    public static int maxY = 200;
     public static tileSet[][] map = new tileSet[maxX][maxY];
     public static double[] heightmap = new double[maxX];
     public static Random rand = new Random();
@@ -15,16 +15,16 @@ public class mapGrid {
 
             //generates heightmap
             for (int x = 0; x < maxX; x++) {
-
-                double slope = 0.25; //slope of the terrain before modifications (slope downwards)
-                double sin_weight = 10; //heigher values will amke the terrain look like a sin graph
+                double starting_depth = 10;
+                double slope = 0; //slope of the terrain before modifications (slope downwards)
+                double sin_weight = 1; //heigher values will amke the terrain look like a sin graph
                 double noise_weight = 1; ///heigher values makes the terrain more noisier and random
 
                 //adds random noise
                 heightmap[x] = noise_weight * SimplexNoise.noise(rand.nextInt(10), 0);
 
                 //slope trend of terrain
-                heightmap[x] = heightmap[x] - 10 + slope * x;
+                heightmap[x] = heightmap[x] + starting_depth + slope * x;
 
                 //adds sinosoidal noise
                 heightmap[x] = heightmap[x] + sin_weight * Math.sin(0.25 * x);
@@ -69,7 +69,7 @@ public class mapGrid {
             boolean[][] cellmap = new boolean[maxX][maxY];
             for (int x = 0; x < maxX; x++) {
                 for (int y = 0; y < maxY; y++) {
-                    if (y > 40) {
+                    if (y > 30 && y < 80) {
                         cellmap[x][y] = false;
                     } else {
                         cellmap[x][y] = true;
@@ -84,7 +84,7 @@ public class mapGrid {
                     }
                 }
             }
-            for (int z = 0; z < 1000; z++) {
+            for (int z = 0; z < 20; z++) {
                 cellmap = doSimulationStep(cellmap);
             }
             for (int x = 0; x < maxX; x++) {
@@ -137,7 +137,7 @@ public class mapGrid {
             }
 
             //mushroom coral
-            int mushroomFrequency = 20;//(heigher = rarer)
+            int mushroomFrequency = 0;//(heigher = rarer)
             for (int y = 0; y < maxY; y++) {
                 for (int x = 0; x < maxX; x++) {
                     try {
