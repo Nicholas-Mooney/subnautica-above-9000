@@ -4,8 +4,7 @@ import java.awt.*;
 import java.util.*;
 import java.lang.Math;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.pow;
+import static java.lang.Math.*;
 
 public class MainLoop {
     public static Random rand = new Random();
@@ -19,16 +18,47 @@ public class MainLoop {
     public static int viewportX = 17;
     public static int viewportY = 12;
 
+    public static boolean grabbing = false; //NEW
+
     public static int count = 0; ///THIS
-    public static int dayCount = 1200;
+    public static int dayCount = 2000;
+    public static int mineCounter = 0;
+    public static int mineCounterMax = 5;
+
     public static boolean displayAll = false;
     public static String input = "starting_input";
+
     public static playerInv Inv = new playerInv();
     public static mapGrid map = new mapGrid(1000);
     public static String direction = "N";
+    public static int playerLightVal = 128;
 
+    public static boolean playerInteract = true;
+
+    public static int health = 10;
+    public static int health_max = 10;
+
+    public static int oxygen = 100;
+    public static int oxygen_max = 109;
+    public static int oxygenCount = 0;
+    public static int oxygenCountMax = 10;
+    public static int oxygenRefillRate = 3;
+    public static int bubbleOxygenRate = 30;
+
+    public static int food = 10;
+    public static int food_max = 10;
+    public static int foodCount = 0;
+    public static int foodCountMax = 400;
+
+    public static int hitCountX = 0;
+    public static int hitRefreshX = 10;
+    public static int hitDamagehX = 1;
+
+    public static boolean tookDamage = false; //adventure
+
+    public static double death_animation_radius = 20;
     public static ArrayList<Entity> entities = new ArrayList<Entity>();
-
+    public static ArrayList<Entity> entitiesR = new ArrayList<Entity>();
     public static void main(String[] args) {
         //game variables
         boolean running = true;
@@ -36,22 +66,66 @@ public class MainLoop {
 
         //game loop
         while (running) {
-            wait(50);
+            if (hitCountX > 7) { //adventure
+                if (health > 0) {
+                    tookDamage = true;
+                }
+            }
+            wait(20);
+            entityRenderUpdater();
             display(map);
             processInput(map);
-            input = "";
-            gui.inventoryFieldUpdater("hello vietnam" + Inv.retString());
-            map.mapRefresh(); //updates fruit and kelp growth on mapgrid
-            entityTicker(); //updates entity tick count which controls entity behaviour
-            entityUpdater(); //executes all entity movement
-            entitySpawner(); //sapwns bubbless
-            //daycount
-            dayCount++;
-            if (dayCount > 3000) {
-                dayCount = dayCount - 3000;
-            }
+            /*
+            if (health > 0) {
+
+            } else {
+                death_animation_radius = death_animation_radius - 0.1;
+                for (int y = playerY - viewportY; y <= playerY + viewportY; y++) {
+                    for (int x = playerX - viewportX; x < playerX + viewportX; x++) {
+                        oxygen = 0;
+                        food = 0;
+                        displayAll = true;
+                        if (death_animation_radius < Math.sqrt((playerX - x) * (playerX - x) + (playerY - y) * (playerY - y))) {
+                            mapGrid.map[x][y].tileType = "X";
+                        }
+                                              displayAll = true;
+                                              if (rand.nextInt(100) < 5) {
+                                                   mapGrid.map[x][y].tileType = "X";
+                        }
+
+                    }
+                }
+            } //adventure
+
+             */
+
+        input = "";
+        tookDamage = false; //adventure
+        //health
+        checkForDamage();
+
+        //Sidebars
+        gui.inventoryFieldUpdater("hello vietnam" + Inv.retString());
+        foodRefresh();
+        oxygenRefresh();
+        oxygenRefill();
+        barRefresh();
+
+        map.mapRefresh(); //updates fruit and kelp growth on mapgrid
+        entityTicker(); //updates entity tick count which controls entity behaviour
+        entityUpdater(); //executes all entity movement
+        entitySpawner(); //sapwns bubbless
+
+        //daycount
+        dayCount++;
+        if (dayCount > 3000) {
+            dayCount = dayCount - 3000;
+        }
+
         }
     }
+
+
 
     public static void wait(int x) {
         try {
@@ -60,7 +134,6 @@ public class MainLoop {
 
         }
     }
-
     public static void display(mapGrid map) {
         if (count == 0) {
             displayRoomX(gui.textPaneHView2, gui.textPaneHView, map);
@@ -71,7 +144,40 @@ public class MainLoop {
             count = 0;
         }
     }
-
+    public static boolean checkEntity(int x, int y) {
+        for (Entity entity : entitiesR) {
+            if (entity.x == x && entity.y == y) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public static String getEntityChar(int x, int y) {
+        for (Entity entity : entitiesR) {
+            if (entity.x == x && entity.y == y) {
+                return entity.chara;
+            }
+        }
+        return "!";
+    }
+    public static Color getEntityColor(int x, int y) {
+        for (Entity entity : entitiesR) {
+            if (entity.x == x && entity.y == y) {
+                return entity.color;
+            }
+        }
+        return Color.BLUE;
+    }
+    public static Color getBloodEntityColor(int x, int y) {
+        for (Entity entity : entitiesR) {
+            if (entity.x == x && entity.y == y) {
+                Color entity_shade = entity.color;
+                entity_shade = new Color(entity.color.getRed(), 0, 0);
+                return entity_shade;
+            }
+        }
+        return Color.BLUE;
+    } //adventure
     public static void displayRoomX(JTextAreaA textPane, JTextAreaA textPane2, mapGrid map) {
         textPane.setText("");
         int py = playerY;
@@ -84,84 +190,67 @@ public class MainLoop {
 
         //add all entities
         //TODO change to entities loaded
-        for (int h = 0; h < entities.size(); h++) {
-            xArr.add(entities.get(h).x);
-            yArr.add(entities.get(h).y);
-            pArr.add(entities.get(h).lightPower);
+        for (int h = 0; h < entitiesR.size(); h++) {
+            if (entitiesR.get(h).lightPower > 0) {
+                xArr.add(entitiesR.get(h).x);
+                yArr.add(entitiesR.get(h).y);
+                pArr.add(entitiesR.get(h).lightPower);
+            }
         }
         //TODO add tile checker for light sources
 
         //all x/y on screen
+
+        xArr.add(playerX);
+        yArr.add(playerY);
+        pArr.add(playerLightVal / 8);
+
         for (int y = py - viewportY; y <= py + viewportY; y++) {
             for (int x = px - viewportX; x < px + viewportX; x++) {
-
-                //add player
-                if (y == playerY && x == playerX) {
-                    textPane.append("P ");
-
-                    //add entities
-                } else if (checkEntity(x, y)) {
-                    textPane.append(getEntityChar(x, y) + " ", getEntityColor(x, y));
-                } else {
-
-                    //add border
-                    if (x >= mapGrid.maxX || y >= mapGrid.maxY || y < 0 || x < 0) {
-                        textPane.append("| ", Color.white);
-
-                        //add  tiles
+                try {
+                    //add player
+                    if (y == playerY && x == playerX) {
+                        if (!tookDamage) {
+                            textPane.append("P ");
+                        } else {
+                            textPane.append("P ", Color.red);
+                        }
+                        //add entities
+                    } else if (checkEntity(x, y) && health > 0) {
+                        if (!tookDamage) {
+                            textPane.append(getEntityChar(x, y) + " ", getShade(getEntityColor(x, y), MForTile(mapGrid.map[x][y], x, y, xArr, yArr, pArr, direction)));
+                        } else {
+                            textPane.append(getEntityChar(x, y) + " ", getShade(getBloodEntityColor(x, y), MForTile(mapGrid.map[x][y], x, y, xArr, yArr, pArr, direction)));
+                        }
                     } else {
-                        //new add player to light calc
-                        xArr.add(playerX);
-                        yArr.add(playerY);
-                        pArr.add(8);
-
-                        //add tile
-                        textPane.append(charForTile(mapGrid.map[x][y]) + " ", colorForTile(mapGrid.map[x][y], x, y, xArr, yArr, pArr));
+                        if (x >= mapGrid.maxX || y >= mapGrid.maxY || y < 0 || x < 0) {
+                            textPane.append("| ", Color.white);
+                        } else {
+                            //add tile
+                            System.out.println("here: " + tookDamage);
+                            if (!tookDamage) {
+                                textPane.append(charForTile(mapGrid.map[x][y]) + " ", getShade(getTileColor(mapGrid.map[x][y].tileType), MForTile(mapGrid.map[x][y], x, y, xArr, yArr, pArr, direction)));
+                            } else {
+                                textPane.append(charForTile(mapGrid.map[x][y]) + " ", getShade(getBloodTileColor(mapGrid.map[x][y].tileType), MForTile(mapGrid.map[x][y], x, y, xArr, yArr, pArr, direction)));
+                            }
+                        }
                     }
+                } catch (Exception ignored) {
+
                 }
             }
             textPane.append("\n", Color.white);
         }
         textPane.setVisible(true);
         textPane2.setVisible(false);
-    }
-
-    public static boolean checkEntity(int x, int y) {
-        for (Entity entity : entities) {
-            if (entity.x == x && entity.y == y) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static String getEntityChar(int x, int y) {
-        for (Entity entity : entities) {
-            if (entity.x == x && entity.y == y) {
-                return entity.chara;
-            }
-        }
-        return "!";
-    }
-
-    public static Color getEntityColor(int x, int y) {
-        for (Entity entity : entities) {
-            if (entity.x == x && entity.y == y) {
-                return entity.color;
-            }
-        }
-        return Color.BLUE;
-    }
-
+    } //adventure
     //entity manager
     public static int entityTickCount = 0;
-
     public static void entityTicker() {
         entityTickCount++;
     }
-
     public static void entityUpdater() {     //controls entity behaviour
-        for (Entity entity : entities) {
+        for (Entity entity : entitiesR) {
 
             if (entity.type.equals("bubble")) {
                 //desynchronizes entity motion by comparing entityTickCount to a value assigned to entity at its birth depending on the tick, instead of updating on the same tick for all entities!
@@ -179,26 +268,45 @@ public class MainLoop {
                 if (playerX == entity.x && playerY == entity.y) {
                     entity.flagForRemoval = true;
                     gui.errorFieldUpdater("BUBBLE COLLECTED", Color.white);
+                    oxygen = oxygen + bubbleOxygenRate;
+                    if(oxygen > oxygen_max){
+                        oxygen = oxygen_max;
+                    }
                 }
 
-            }
-            else if (entity.type.equals("fish")) {
+            } else if (entity.type.equals("fish")) {
                 int oldx = entity.x;
                 int oldy = entity.y;
                 entity.AI.x = entity.x;
                 entity.AI.y = entity.y;
 
-                if (5 > Math.sqrt((playerY - entity.y) * (playerY - entity.y) + (playerX - entity.x) * (playerX - entity.x))) {
-                    entity.AI.avoid = true;
-                    entity.AI.xa = playerX;
-                    entity.AI.ya = playerY;
-                    entity.color = Color.white;
-                    entity.speed = 1;
-                } else {
-                    entity.AI.avoid = false;
-                    entity.color = Color.green;
-                    entity.speed = 4;
-
+                //normal behavior
+                entity.AI.avoid = false;
+                entity.color = Color.green;
+                entity.speed = 4;
+                //ENTITY LIGHTING MODULATOR
+                entity.lightPower = (int) (3 * Math.sin(0.25*entityTickCount) + 5.0);
+                //predator avoider
+                for (Entity entity2 : entitiesR) {
+                    if (entity.ID != entity2.ID) {
+                        if (entity2.type.equals("hunter")) {
+                            if (5 > Math.sqrt((entity2.y - entity.y) * (entity2.y - entity.y) + (entity2.x - entity.x) * (entity2.x - entity.x))) {
+                                entity.AI.avoid = true;
+                                entity.AI.xa = entity2.x;
+                                entity.AI.ya = entity2.y;
+                                entity.speed = 1;
+                            }
+                        }
+                    }
+                }
+                if (playerInteract) {
+                    //player avoider
+                    if (5 > Math.sqrt((playerY - entity.y) * (playerY - entity.y) + (playerX - entity.x) * (playerX - entity.x))) {
+                        entity.AI.avoid = true;
+                        entity.AI.xa = playerX;
+                        entity.AI.ya = playerY;
+                        entity.speed = 2;
+                    }
                 }
 
                 if (entityTickCount % entity.speed == 0) {
@@ -222,26 +330,40 @@ public class MainLoop {
                     entity.y = oldy;
                 }
 
-            }
-            else if (entity.type.equals("hunter")) {
+            } else if (entity.type.equals("hunter")) {
                 int oldx = entity.x;
                 int oldy = entity.y;
                 entity.AI.x = entity.x;
                 entity.AI.y = entity.y;
 
-                if (7 > Math.sqrt((playerY - entity.y) * (playerY - entity.y) + (playerX - entity.x) * (playerX - entity.x))) {
-                    entity.AI.target = true;
-                    entity.AI.xt = playerX;
-                    entity.AI.yt = playerY;
-                    entity.color = Color.red;
-                    entity.speed = 2;
-                } else {
-                    entity.AI.target = false;
-                    entity.color = Color.blue;
-                    entity.speed = 4;
+                //normal behavior
+                entity.AI.target = false;
+                entity.color = Color.red;
+                entity.speed = 5;
 
+                //scan for "fish" to chase within 10 radius, sets target coordinates and targeting boolean to fish within radius
+                for (Entity entity2 : entitiesR) {
+                    if (entity.ID != entity2.ID) {
+                        if (entity2.type.equals("fish")) {
+                            if (7 > Math.sqrt((entity2.y - entity.y) * (entity2.y - entity.y) + (entity2.x - entity.x) * (entity2.x - entity.x))) {
+                                entity.AI.target = true;
+                                entity.AI.xt = entity2.x;
+                                entity.AI.yt = entity2.y;
+                                entity.speed = 3;
+                            }
+                        }
+                    }
                 }
 
+                if (playerInteract) {
+                    //attack players within 10 ft
+                    if (7 > Math.sqrt((playerY - entity.y) * (playerY - entity.y) + (playerX - entity.x) * (playerX - entity.x))) {
+                        entity.AI.target = true;
+                        entity.AI.xt = playerX;
+                        entity.AI.yt = playerY;
+                        entity.speed = 3;
+                    }
+                }
                 if (entityTickCount % entity.speed == 0) {
                     entity.y = entity.y + entity.AI.getMoveY();
                     entity.x = entity.x + entity.AI.getMoveX();
@@ -263,8 +385,7 @@ public class MainLoop {
                     entity.y = oldy;
                 }
 
-            }
-            else {
+            } else {
                 System.out.println("Untyped entity present");
             }
         }
@@ -277,21 +398,32 @@ public class MainLoop {
             }
         }
     }
+    public static void entityRenderUpdater() {
+        entitiesR.clear();
+        for (Entity entity : entities) {
+            if (entity.x < playerX + viewportX + 5 && entity.x > playerX - viewportX - 5) {
+                if (entity.y < playerY + viewportY + 5 && entity.y > playerY - viewportY - 5) {
+                    entitiesR.add(entity);
+                }
+            }
+        }
 
+        gui.errorFieldUpdater("R: " + entitiesR.size() + " T: " + entities.size(), Color.white);
+    }
     public static void entitySpawner() {
         for (int x = 0; x < mapGrid.maxX; x++) {
             for (int y = 0; y < mapGrid.maxY; y++) {
                 if (mapGrid.map[x][y].tileType.equals("brain")) {
                     if (rand.nextInt(200) < 1) {
-                        entities.add(new Entity("O", "bubble", x, y, Color.white, 5));
+                        entities.add(new Entity("O", "bubble", x, y, new Color(255,255,255), 0));
                     }
                 }
                 if (mapGrid.map[x][y].tileType.equals("water")) {
-                    if (entities.size() < 20) {
-                        if (rand.nextInt(10000) == 0) {
-                            entities.add(new Entity("o", "fish", x, y, new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255)), 0));
+                    if (entities.size() < 100) {
+                        if (rand.nextInt(1000) == 0) {
+                            entities.add(new Entity("o", "fish", x, y, new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255)), 5));
                         } else {
-                            if (rand.nextInt(1000) == 0) {
+                            if (rand.nextInt(2000) == 0) {
                                 entities.add(new Entity("X", "hunter", x, y, new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255)), 0));
                             }
                         }
@@ -300,7 +432,6 @@ public class MainLoop {
             }
         }
     }
-
     //input functions
     public static void processInput(mapGrid map) {
         //these functions detect the HELD values from gui, turned off by key release signals
@@ -478,10 +609,22 @@ public class MainLoop {
         }
     }
     public static void processAction(mapGrid map) {
-        if (MainLoop.input.equals("g")) {
-            System.out.print("g)");
+        if (grabbing) {
+
             //check for something to grab
             //then change map or entity list / amend inv
+            for (Entity entity : entitiesR) {
+                if (entity.type.equals("fish")) {
+                    if (entity.x <= playerX + 1 && entity.x >= playerX - 1) {
+                        if (entity.y <= playerY + 1 && entity.y >= playerY - 1) {
+                            entity.flagForRemoval = true;
+                            MainLoop.Inv.addItem("Fish");
+                        }
+                    }
+                }
+            }
+
+
             if (map.map[playerX][playerY].tileType.equals("fruit")) {
                 MainLoop.map.map[playerX][playerY].tileType = "water";
                 MainLoop.Inv.addItem("fruit");
@@ -511,26 +654,230 @@ public class MainLoop {
                 MainLoop.Inv.addItem("fruit");
             }
         }
-    }
-
-    //display functions
-    public static void displayOld() {
-        for (int y = playerY - viewportY; y < playerY + viewportY; y++) {
-            for (int x = playerX - viewportX; x < playerX + viewportX; x++) {
-                if (y == playerY && x == playerX) {
-                    //System.out.print("P ");
-                } else {
-                    if (x >= mapGrid.maxX || y >= mapGrid.maxY || y < 0 || x < 0) {
-                        //System.out.print("| ");
+        if(MainLoop.input.equals("q")){
+            //System.out.print("q");
+            if(mineCounter < mineCounterMax){
+                mineCounter++;
+            }else{
+                mineCounter = 0;
+                //apply mine
+                //mining down into not air or water
+                if (direction.equals("S")
+                        && ((
+                        !(MainLoop.map.map[playerX][playerY+1].tileType.equals("water"))
+                                && !(MainLoop.map.map[playerX][playerY+1].tileType.equals("air"))))) {
+                    //if water adjacent or above
+                    int blockX = playerX;
+                    int blockY = playerY + 1;
+                    if (MainLoop.map.map[blockX - 1][blockY].waterBased() || //left
+                            MainLoop.map.map[blockX + 1][blockY].waterBased() || //right
+                            MainLoop.map.map[blockX - 1][blockY - 1].waterBased() || //NW
+                            MainLoop.map.map[blockX][blockY - 1].waterBased() || //N
+                            MainLoop.map.map[blockX + 1][blockY - 1].waterBased() //NE
+                    ) {
+                        GetMined(blockX, blockY);
+                        MainLoop.map.map[blockX][blockY].tileType = "water";
                     } else {
-                        //System.out.print(displayForTile(mapGrid.map[x][y]));
-                        //System.out.print(" ");
+                        GetMined(blockX, blockY);
+                        MainLoop.map.map[blockX][blockY].tileType = "air";
+                    }
+                }
+
+                //mining downleft into not air or water
+                if (direction.equals("SE")
+                        && ((
+                        !(MainLoop.map.map[playerX+1][playerY+1].tileType.equals("water"))
+                                && !(MainLoop.map.map[playerX+1][playerY+1].tileType.equals("air"))))) {
+                    //if water adjacent or above
+                    int blockX = playerX+1;
+                    int blockY = playerY+1;
+                    if(MainLoop.map.map[blockX - 1][blockY].waterBased() || //left
+                            MainLoop.map.map[blockX + 1][blockY].waterBased() || //right
+                            MainLoop.map.map[blockX-1][blockY-1].waterBased() || //NW
+                            MainLoop.map.map[blockX][blockY-1].waterBased() || //N
+                            MainLoop.map.map[blockX+1][blockY-1].waterBased() //NE
+                    ){
+                        GetMined(blockX, blockY);
+                        MainLoop.map.map[blockX][blockY].tileType = "water";
+                    }else {
+                        GetMined(blockX, blockY);
+                        MainLoop.map.map[blockX][blockY].tileType = "air";
+                    }
+                }
+                if (direction.equals("SW")
+                        && ((
+                        !(MainLoop.map.map[playerX-1][playerY+1].tileType.equals("water"))
+                                && !(MainLoop.map.map[playerX-1][playerY+1].tileType.equals("air"))))) {
+                    //if water adjacent or above
+                    int blockX = playerX-1;
+                    int blockY = playerY+1;
+                    if(MainLoop.map.map[blockX - 1][blockY].waterBased() || //left
+                            MainLoop.map.map[blockX + 1][blockY].waterBased() || //right
+                            MainLoop.map.map[blockX-1][blockY-1].waterBased() || //NW
+                            MainLoop.map.map[blockX][blockY-1].waterBased() || //N
+                            MainLoop.map.map[blockX+1][blockY-1].waterBased() //NE
+                    ){
+                        GetMined(blockX, blockY);
+                        MainLoop.map.map[blockX][blockY].tileType = "water";
+                    }else {
+                        GetMined(blockX, blockY);
+                        MainLoop.map.map[blockX][blockY].tileType = "air";
+                    }
+                }
+                if (direction.equals("W")
+                        && ((
+                        !(MainLoop.map.map[playerX-1][playerY].tileType.equals("water"))
+                                && !(MainLoop.map.map[playerX-1][playerY].tileType.equals("air"))))) {
+                    //if water adjacent or above
+                    int blockX = playerX-1;
+                    int blockY = playerY;
+                    if(MainLoop.map.map[blockX - 1][blockY].waterBased() || //left
+                            MainLoop.map.map[blockX + 1][blockY].waterBased() || //right
+                            MainLoop.map.map[blockX-1][blockY-1].waterBased() || //NW
+                            MainLoop.map.map[blockX][blockY-1].waterBased() || //N
+                            MainLoop.map.map[blockX+1][blockY-1].waterBased() //NE
+                    ){
+                        GetMined(blockX, blockY);
+                        MainLoop.map.map[blockX][blockY].tileType = "water";
+                    }else {
+                        GetMined(blockX, blockY);
+                        MainLoop.map.map[blockX][blockY].tileType = "air";
+                    }
+                }
+                if (direction.equals("E")
+                        && ((
+                        !(MainLoop.map.map[playerX+1][playerY].tileType.equals("water"))
+                                && !(MainLoop.map.map[playerX+1][playerY].tileType.equals("air"))))) {
+                    //if water adjacent or above
+                    int blockX = playerX+1;
+                    int blockY = playerY;
+                    if(MainLoop.map.map[blockX - 1][blockY].waterBased() || //left
+                            MainLoop.map.map[blockX + 1][blockY].waterBased() || //right
+                            MainLoop.map.map[blockX-1][blockY-1].waterBased() || //NW
+                            MainLoop.map.map[blockX][blockY-1].waterBased() || //N
+                            MainLoop.map.map[blockX+1][blockY-1].waterBased() //NE
+                    ){
+                        GetMined(blockX, blockY);
+                        MainLoop.map.map[blockX][blockY].tileType = "water";
+                    }else {
+                        GetMined(blockX, blockY);
+                        MainLoop.map.map[blockX][blockY].tileType = "air";
+                    }
+                }
+                if (direction.equals("N")
+                        && ((
+                        !(MainLoop.map.map[playerX][playerY-1].tileType.equals("water"))
+                                && !(MainLoop.map.map[playerX][playerY-1].tileType.equals("air"))))) {
+                    //if water adjacent or above
+                    int blockX = playerX;
+                    int blockY = playerY-1;
+                    if(MainLoop.map.map[blockX - 1][blockY].waterBased() || //left
+                            MainLoop.map.map[blockX + 1][blockY].waterBased() || //right
+                            MainLoop.map.map[blockX-1][blockY-1].waterBased() || //NW
+                            MainLoop.map.map[blockX][blockY-1].waterBased() || //N
+                            MainLoop.map.map[blockX+1][blockY-1].waterBased() //NE
+                    ){
+                        GetMined(blockX, blockY);
+                        MainLoop.map.map[blockX][blockY].tileType = "water";
+                    }else if(MainLoop.map.map[blockX - 1][blockY].airBased() || //left
+                            MainLoop.map.map[blockX + 1][blockY].airBased() || //right
+                            MainLoop.map.map[blockX-1][blockY-1].airBased() || //NW
+                            MainLoop.map.map[blockX][blockY-1].airBased() || //N
+                            MainLoop.map.map[blockX+1][blockY-1].airBased() //NE
+                    ){
+                        GetMined(blockX, blockY);
+                        MainLoop.map.map[blockX][blockY].tileType = "air";
+                    }else if(MainLoop.map.map[blockX][blockY+1].airBased() || //S
+                            MainLoop.map.map[blockX + 1][blockY+1].airBased() || //SE
+                            MainLoop.map.map[blockX-1][blockY+1].airBased()  //SW
+                    ){
+                        GetMined(blockX, blockY);
+                        MainLoop.map.map[blockX][blockY].tileType = "air";
+                    }else{
+                        GetMined(blockX, blockY);
+                        MainLoop.map.map[blockX][blockY].tileType = "water";
+                    }
+                }
+                if (direction.equals("NE")
+                        && ((
+                        !(MainLoop.map.map[playerX+1][playerY-1].tileType.equals("water"))
+                                && !(MainLoop.map.map[playerX+1][playerY-1].tileType.equals("air"))))) {
+                    //if water adjacent or above
+                    int blockX = playerX+1;
+                    int blockY = playerY-1;
+                    if(MainLoop.map.map[blockX - 1][blockY].waterBased() || //left
+                            MainLoop.map.map[blockX + 1][blockY].waterBased() || //right
+                            MainLoop.map.map[blockX-1][blockY-1].waterBased() || //NW
+                            MainLoop.map.map[blockX][blockY-1].waterBased() || //N
+                            MainLoop.map.map[blockX+1][blockY-1].waterBased() //NE
+                    ){
+                        GetMined(blockX, blockY);
+                        MainLoop.map.map[blockX][blockY].tileType = "water";
+                    }else if(MainLoop.map.map[blockX - 1][blockY].airBased() || //left
+                            MainLoop.map.map[blockX + 1][blockY].airBased() || //right
+                            MainLoop.map.map[blockX-1][blockY-1].airBased() || //NW
+                            MainLoop.map.map[blockX][blockY-1].airBased() || //N
+                            MainLoop.map.map[blockX+1][blockY-1].airBased() //NE
+                    ){
+                        GetMined(blockX, blockY);
+                        MainLoop.map.map[blockX][blockY].tileType = "air";
+                    }else if(MainLoop.map.map[blockX][blockY+1].airBased() || //S
+                            MainLoop.map.map[blockX + 1][blockY+1].airBased() || //SE
+                            MainLoop.map.map[blockX-1][blockY+1].airBased()  //SW
+                    ){
+                        GetMined(blockX, blockY);
+                        MainLoop.map.map[blockX][blockY].tileType = "air";
+                    }else{
+                        GetMined(blockX, blockY);
+                        MainLoop.map.map[blockX][blockY].tileType = "water";
+                    }
+                }
+                if (direction.equals("NW")
+                        && ((
+                        !(MainLoop.map.map[playerX-1][playerY-1].tileType.equals("water"))
+                                && !(MainLoop.map.map[playerX-1][playerY-1].tileType.equals("air"))))) {
+                    //if water adjacent or above
+                    int blockX = playerX-1;
+                    int blockY = playerY-1;
+                    if(MainLoop.map.map[blockX - 1][blockY].waterBased() || //left
+                            MainLoop.map.map[blockX + 1][blockY].waterBased() || //right
+                            MainLoop.map.map[blockX-1][blockY-1].waterBased() || //NW
+                            MainLoop.map.map[blockX][blockY-1].waterBased() || //N
+                            MainLoop.map.map[blockX+1][blockY-1].waterBased() //NE
+                    ){
+                        GetMined(blockX, blockY);
+                        MainLoop.map.map[blockX][blockY].tileType = "water";
+                    }else if(MainLoop.map.map[blockX - 1][blockY].airBased() || //left
+                            MainLoop.map.map[blockX + 1][blockY].airBased() || //right
+                            MainLoop.map.map[blockX-1][blockY-1].airBased() || //NW
+                            MainLoop.map.map[blockX][blockY-1].airBased() || //N
+                            MainLoop.map.map[blockX+1][blockY-1].airBased() //NE
+                    ){
+                        GetMined(blockX, blockY);
+                        MainLoop.map.map[blockX][blockY].tileType = "air";
+                    }else if(MainLoop.map.map[blockX][blockY+1].airBased() || //S
+                            MainLoop.map.map[blockX + 1][blockY+1].airBased() || //SE
+                            MainLoop.map.map[blockX-1][blockY+1].airBased()  //SW
+                    ){
+                        GetMined(blockX, blockY);
+                        MainLoop.map.map[blockX][blockY].tileType = "air";
+                    }else{
+                        GetMined(blockX, blockY);
+                        MainLoop.map.map[blockX][blockY].tileType = "water";
                     }
                 }
             }
-            //System.out.println(" ");
         }
+        else{
+            mineCounter = 0;
+        }
+
+        grabbing = false;
     }
+    public static void GetMined(int x, int y){
+        MainLoop.Inv.addItem(MainLoop.map.map[x][y].tileType);
+    }
+    //display functions
     public static char charForTile(tileSet tile) {
         switch (tile.tileType) {
             case "air":
@@ -553,12 +900,15 @@ public class MainLoop {
                 return '%';
             case "mushroom3":
                 return '%';
+            case "X":
+                return 'X';
             default:
                 return '!';
         }
     }
-    public static Color colorForTile(tileSet tile, int x, int y, ArrayList<Integer> xArr, ArrayList<Integer> yArr, ArrayList<Integer> pArr) {
+    public static double MForTile(tileSet tile, int x, int y, ArrayList<Integer> xArr, ArrayList<Integer> yArr, ArrayList<Integer> pArr, String direction) {
         //depth lighting
+
         double daylight = MainLoop.dayCount / 3000.0;
         daylight = (Math.sin(daylight * 2 * Math.PI) + 1) / 2.0;
         double elevation = y;
@@ -567,17 +917,19 @@ public class MainLoop {
         }
         double m1 = daylight * (100 - elevation) / 100.0;
 
-
-
+        if (checkInCone(direction, x, y)) {
+            xArr.add(playerX);
+            yArr.add(playerY);
+            pArr.add(playerLightVal);
+        }
         //entity lighting
         double[] pr = new double[xArr.size()];
         for (int i = 0; i < pr.length; i++) {
             int dx = Math.abs(x - xArr.get(i));
             int dy = Math.abs(y - yArr.get(i));
             double radius = pow(((pow(dx, 2)) + (pow(dy, 2))), 0.5);
-            pr[i] = pow(pArr.get(i) / radius, (2))/(radius*radius);
+            pr[i] = pow(pArr.get(i) / radius, (2))/(radius*radius) + 0.1;
         }
-
         //take highest
         double xmax = 0;
         if (pr.length != 0) {
@@ -596,29 +948,239 @@ public class MainLoop {
             m = 1;
         }
 
-        switch (tile.tileType) {
+        if (xArr.size() > 0) {
+            if (checkInCone(direction, x, y)) {
+                xArr.remove(xArr.size() - 1);
+                yArr.remove(yArr.size() - 1);
+                pArr.remove(pArr.size() - 1);
+            }
+        }
+        if (m < 0.05) {
+            m = 0.05;
+        }
+
+        return m;
+    }
+    public static boolean checkInCone(String direction, int x, int y) {
+        //y < ((playerX - x) * 0.5) + playerY + 1 && y > ((playerX - x) * -0.5) + playerY - 1
+
+        if (direction.equals("W")) {
+            if (y < ((playerX - x) * 0.5) + playerY + 1 && y > ((playerX - x) * -0.5) + playerY - 1 && playerX > x) {
+                return true;
+            }
+        }
+        if (direction.equals("S")) {
+            if (y > ((playerX - x) * 2) + playerY - 2 && y > ((playerX - x) * -2) + playerY - 2 && playerY < y) {
+                return true;
+            }
+        }
+        if (direction.equals("E")) {
+            if (y > ((playerX - x) * 0.5) + playerY - 1 && y < ((playerX - x) * -0.5) + playerY + 1 && playerX < x) {
+                return true;
+            }
+        }
+        if (direction.equals("N")) {
+            if (y < ((playerX - x) * 2) + playerY + 2 && y < ((playerX - x) * -2) + playerY + 2 && playerY > y) {
+                return true;
+            }
+        }
+
+        if (direction.equals("NW")) {
+            if (y >= (playerX - x) * -3 + playerY - 3 && y <= (playerX - x) * -0.33 + playerY + 1 && x <= playerX && y <= playerY) {
+                return true;
+            }
+        }
+        if (direction.equals("NE")) {
+            if (y >= (playerX - x) * 3 + playerY - 3 && y <= (playerX - x) * 0.33 + playerY + 1 && x >= playerX && y <= playerY) {
+                return true;
+            }
+        }
+//
+        if (direction.equals("SE")) {
+            if (y <= (playerX - x) * -3 + playerY + 3 && y >= (playerX - x) * -0.33 + playerY - 1 && x >= playerX && y >= playerY ) {
+                return true;
+            }
+        }
+        //y <= (playerX - x) * 2 + playerY + 2 && y <= (playerX - x) * -0.5 + playerY - 1 &&
+        if (direction.equals("SW")) {
+            if (y <= (playerX - x) * 3 + playerY + 3 && y >= (playerX - x) * 0.33+ playerY - 1 && x <= playerX && y >= playerY) {
+                return true;
+            }
+        }
+
+
+        return false;
+    }
+    public static Color getTileColor (String name) {
+        switch (name) {
             case "air":
-                return new Color((int) (m * 220), (int) (m * 200), (int) (m * 160));
+                return new Color((int) (220), (int) (200), (int) (160));
             case "water":
-                return new Color((int) (m * 0), (int) (m * 60), (int) (m * 135));
+                return new Color(0, 79, 198);
             case "earth":
-                return new Color((int) (m * 160), (int) (m * 131), (int) (m * 46));
+                return new Color(153, 114, 3);
             case "ore":
-                return new Color((int) (m * 142), (int) (m * 122), (int) (m * 102));
+                return new Color(108, 83, 83);
             case "kelp":
-                return new Color((int) (m * 50), (int) (m * 220), (int) (m * 100));
+                return new Color(0, 78, 24);
             case "brain":
-                return new Color((int) (m * 250), (int) (m * 100), (int) (m * 120));
+                return new Color((int) (250), (int) (100), (int) (120));
             case "fruit":
-                return new Color((int) (m * 250), (int) (m * 250), (int) (m * 0));
+                return new Color((int) (250), (int) (250), (int) (0));
             case "mushroom":
-                return new Color((int) (m * 204), (int) (m * 0), (int) (m * 0));
+                return new Color((int) (204), (int) (0), (int) (0));
             case "mushroom2":
-                return new Color((int) (m * 254), (int) (m * 250), (int) (m * 0));
+                return new Color((int) (254), (int) (250), (int) (0));
             case "mushroom3":
-                return new Color((int) (m * 250), (int) (m * 51), (int) (m * 152));
+                return new Color((int) (250), (int) (51), (int) (152));
+            case "X":
+                return new Color(0, 0, 0);
             default:
-                return new Color((int) (m * 255), (int) (m * 0), (int) (m * 0));
+                return new Color((int) (255), (int) ( 0), (int) (0));
         }
     }
+    public static Color getBloodTileColor (String name) {
+        switch (name) {
+            case "air":
+                return new Color((int) (220), (int) (0), (int) (00));
+            case "water":
+                return new Color(50, 0, 0);
+            case "earth":
+                return new Color(153, 0, 0);
+            case "ore":
+                return new Color(108, 0, 0);
+            case "kelp":
+                return new Color(50, 0, 0);
+            case "brain":
+                return new Color((int) (250), (int) (0), (int) (1));
+            case "fruit":
+                return new Color((int) (250), (int) (0), (int) (0));
+            case "mushroom":
+                return new Color((int) (204), (int) (0), (int) (0));
+            case "mushroom2":
+                return new Color((int) (254), (int) (0), (int) (0));
+            case "mushroom3":
+                return new Color((int) (250), (int) (0), (int) (0));
+            default:
+                return new Color((int) (255), (int) ( 0), (int) (0));
+        }
+    } //adventure
+    public static Color getShade(Color color, double m) {
+        double red = m * color.getRed();
+        double green = m * color.getGreen();
+        double blue = m * color.getBlue();
+        return new Color((int) red, (int) green, (int) blue);
+    }
+    //char stat functions
+    public static void oxygenRefresh(){
+        oxygenCount++;
+        if(oxygenCount == oxygenCountMax){
+            oxygenCount = 0;
+            oxygen--;
+        }
+    }
+    public static void foodRefresh(){
+        foodCount++;
+        if(foodCount == foodCountMax){
+            foodCount = 0;
+            food--;
+        }
+    }
+    public static void oxygenRefill(){
+        if(playerX == 1 || playerX == 0 || playerY == 1 || playerY == 0 || playerX == 400 || playerX == 399 || playerY == 200 || playerY == 199 ){
+            //dont check
+        }else {
+            if (map.map[playerX][playerY - 1].tileType == "air") {
+                oxygen = oxygen + oxygenRefillRate;
+                if(oxygen > oxygen_max){
+                    oxygen = oxygen_max;
+                }
+            } else if (map.map[playerX][playerY].tileType == "air") {
+                oxygen = oxygen + oxygenRefillRate;
+                if(oxygen > oxygen_max){
+                    oxygen = oxygen_max;
+                }
+            } else if (map.map[playerX][playerY + 1].tileType == "air") {
+                oxygen = oxygen + oxygenRefillRate;
+                if(oxygen > oxygen_max){
+                    oxygen = oxygen_max;
+                }
+            }else if (map.map[playerX + 1][playerY - 1].tileType == "air") {
+                oxygen = oxygen + oxygenRefillRate;
+                if(oxygen > oxygen_max){
+                    oxygen = oxygen_max;
+                }
+            }else if (map.map[playerX + 1][playerY].tileType == "air") {
+                oxygen = oxygen + oxygenRefillRate;
+                if(oxygen > oxygen_max){
+                    oxygen = oxygen_max;
+                }
+            }else if (map.map[playerX + 1][playerY + 1].tileType == "air") {
+                oxygen = oxygen + oxygenRefillRate;
+                if(oxygen > oxygen_max){
+                    oxygen = oxygen_max;
+                }
+            }else if (map.map[playerX - 1][playerY - 1].tileType == "air") {
+                oxygen = oxygen + oxygenRefillRate;
+                if(oxygen > oxygen_max){
+                    oxygen = oxygen_max;
+                }
+            }else if (map.map[playerX - 1][playerY + 1].tileType == "air") {
+                oxygen = oxygen + oxygenRefillRate;
+                if(oxygen > oxygen_max){
+                    oxygen = oxygen_max;
+                }
+            }else if (map.map[playerX - 1][playerY].tileType == "air") {
+                oxygen = oxygen + oxygenRefillRate;
+                if(oxygen > oxygen_max){
+                    oxygen = oxygen_max;
+                }
+            }
+        }
+    }
+    public static void barRefresh(){
+        String healthStr = "";
+        for(int x = 0; x < (health); x++){
+            healthStr = healthStr + "H";
+        }
+        String foodStr = "";
+        for(int x = 0; x < (food); x++){
+            foodStr = foodStr + "F";
+        }
+        String oxyStr = "";
+        for(int x = 0; x < (oxygen/10); x++){
+            oxyStr = oxyStr + "O";
+        }
+        gui.healthPane.setText("");
+        gui.healthPane.append("Health: " + healthStr + "\n",Color.red);
+        gui.healthPane.append("Food:   " + foodStr + "\n",Color.cyan);
+        gui.healthPane.append("Oxygen: " + oxyStr + "\n",Color.white);
+    }
+    public static void updateHitCounts(){
+        if(hitCountX > 0 ){
+            hitCountX--;
+        }
+    }
+    public static void checkForDamage() {
+        updateHitCounts();
+        for (int g = 0; g < entitiesR.size(); g++) {
+            if (entitiesR.get(g).type.equals("hunter")) {
+                int x = entitiesR.get(g).x; //get x
+                int y = entitiesR.get(g).y; //get y
+
+                if (playerX == 1 || playerX == 0 || playerY == 1 || playerY == 0 || playerX == 400 || playerX == 399 || playerY == 200 || playerY == 199) {
+                    //dont check near borders
+                } else {
+                    if (playerX == x && playerY == y) {
+                        if (hitCountX == 0) {
+                            health = health - hitDamagehX;
+                            hitCountX = hitRefreshX;
+
+                            System.out.println(tookDamage);
+                        }
+                    }
+                }
+            }
+        }//for every entity
+    } //adventure
 }
