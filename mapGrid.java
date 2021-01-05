@@ -16,8 +16,8 @@ public class mapGrid {
             //generates heightmap
             for (int x = 0; x < maxX; x++) {
                 double starting_depth = 10;
-                double slope = 0.25; //slope of the terrain before modifications (slope downwards)
-                double sin_weight = 10; //heigher values will amke the terrain look like a sin graph
+                double slope = 0; //slope of the terrain before modifications (slope downwards)
+                double sin_weight = 1; //heigher values will amke the terrain look like a sin graph
                 double noise_weight = 1; ///heigher values makes the terrain more noisier and random
 
                 //adds random noise
@@ -69,7 +69,7 @@ public class mapGrid {
             boolean[][] cellmap = new boolean[maxX][maxY];
             for (int x = 0; x < maxX; x++) {
                 for (int y = 0; y < maxY; y++) {
-                    if (y > 40) {
+                    if (y > 30 && y < 80) {
                         cellmap[x][y] = false;
                     } else {
                         cellmap[x][y] = true;

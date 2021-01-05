@@ -28,7 +28,7 @@ public class MainLoop {
     public static playerInv Inv = new playerInv();
     public static mapGrid map = new mapGrid(1000);
     public static String direction = "N";
-    public static int playerLightVal = 64;
+    public static int playerLightVal = 128;
     public static boolean playerInteract = true;
     public static int health = 10;
     public static int health_max = 10;
@@ -110,22 +110,25 @@ public class MainLoop {
 
         for (int y = py - viewportY; y <= py + viewportY; y++) {
             for (int x = px - viewportX; x < px + viewportX; x++) {
+                try {
+                    //add player
+                    if (y == playerY && x == playerX) {
+                        textPane.append("P ");
 
-                //add player
-                if (y == playerY && x == playerX) {
-                    textPane.append("P ");
+                        //add entities
+                    } else if (checkEntity(x, y)) {
+                        textPane.append(getEntityChar(x, y) + " ", getShade(getEntityColor(x, y), MForTile(mapGrid.map[x][y], x, y, xArr, yArr, pArr, direction)));
 
-                    //add entities
-                } else if (checkEntity(x, y)) {
-                    textPane.append(getEntityChar(x, y) + " ", getShade(getEntityColor(x, y), MForTile(mapGrid.map[x][y], x, y, xArr, yArr, pArr, direction)));
-
-                } else {
-                    if (x >= mapGrid.maxX || y >= mapGrid.maxY || y < 0 || x < 0) {
-                        textPane.append("| ", Color.white);
                     } else {
-                        //add tile
-                        textPane.append(charForTile(mapGrid.map[x][y]) + " ", getShade(getTileColor(mapGrid.map[x][y].tileType), MForTile(mapGrid.map[x][y], x, y, xArr, yArr, pArr, direction)));
+                        if (x >= mapGrid.maxX || y >= mapGrid.maxY || y < 0 || x < 0) {
+                            textPane.append("| ", Color.white);
+                        } else {
+                            //add tile
+                            textPane.append(charForTile(mapGrid.map[x][y]) + " ", getShade(getTileColor(mapGrid.map[x][y].tileType), MForTile(mapGrid.map[x][y], x, y, xArr, yArr, pArr, direction)));
+                        }
                     }
+                } catch (Exception ignored) {
+
                 }
             }
             textPane.append("\n", Color.white);
@@ -930,11 +933,11 @@ public class MainLoop {
             case "air":
                 return new Color((int) (220), (int) (200), (int) (160));
             case "water":
-                return new Color(4, 51, 121);
+                return new Color(0, 79, 198);
             case "earth":
-                return new Color(52, 39, 1);
+                return new Color(153, 114, 3);
             case "ore":
-                return new Color(45, 35, 35);
+                return new Color(108, 83, 83);
             case "kelp":
                 return new Color(0, 78, 24);
             case "brain":
