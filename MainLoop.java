@@ -145,7 +145,7 @@ public class MainLoop {
         return false;
     }
     public static String getEntityChar(int x, int y) {
-        for (Entity entity : entities) {
+        for (Entity entity : entitiesR) {
             if (entity.x == x && entity.y == y) {
                 return entity.chara;
             }
@@ -153,7 +153,7 @@ public class MainLoop {
         return "!";
     }
     public static Color getEntityColor(int x, int y) {
-        for (Entity entity : entities) {
+        for (Entity entity : entitiesR) {
             if (entity.x == x && entity.y == y) {
                 return entity.color;
             }
@@ -168,7 +168,7 @@ public class MainLoop {
         entityTickCount++;
     }
     public static void entityUpdater() {     //controls entity behaviour
-        for (Entity entity : entities) {
+        for (Entity entity : entitiesR) {
 
             if (entity.type.equals("bubble")) {
                 //desynchronizes entity motion by comparing entityTickCount to a value assigned to entity at its birth depending on the tick, instead of updating on the same tick for all entities!
@@ -305,7 +305,7 @@ public class MainLoop {
         }
 
         //remove flagged entities safely
-        for (int x = 0; x < entities.size(); x++) {
+        for (int x = 0; x < entitiesR.size(); x++) {
             if (entities.get(x).flagForRemoval) {
                 entities.remove(x);
                 x++;
