@@ -13,27 +13,33 @@ public class GUI extends JTextPane {
     public static ArrayList<Color> linesColor = new ArrayList<Color>();
     JFrame frame = new JFrame();
     JPanel panel = new JPanel(new BorderLayout());
+
+    //errors
     JLayeredPane layeredPane = new JLayeredPane();
     JTextAreaA errorPane = new JTextAreaA();
 
+    //inv
     JTextAreaA inventoryPane = new JTextAreaA();
+    JTextAreaA healthPane = new JTextAreaA();
 
+    //map
     JTextAreaA textPaneHView = new JTextAreaA();
     JTextAreaA textPaneHView2 = new JTextAreaA();
 
+    //text
+    JTextPane textPane = new JTextPane();
+
+    //na
     JTextAreaA textPaneYView = new JTextAreaA();
     JTextAreaA textPaneYView2 = new JTextAreaA();
 
     JTextAreaA textPaneXView = new JTextAreaA();
     JTextAreaA textPaneXView2 = new JTextAreaA();
 
-    JTextPane textPane = new JTextPane();
-
-
 
     static int WIDTH = 1295;
     static int HEIGHT = 695;
-    Font fontMed = new Font("Monospaced", Font.BOLD, 15);
+    Font fontMed = new Font("Monospaced", Font.BOLD, 17);
     public GUI(){
         
         newTextPane(textPaneXView, fontMed, new Dimension(300, 250));
@@ -47,6 +53,7 @@ public class GUI extends JTextPane {
 
         newTextPane(errorPane, fontMed, new Dimension(WIDTH /5 - 35, HEIGHT*4/7));
         newTextPane(inventoryPane, fontMed, new Dimension(WIDTH /5 - 35, HEIGHT*4/7));
+        newTextPane(healthPane, fontMed, new Dimension(WIDTH /5 - 35, HEIGHT*1/7));
         layeredPane.add(textPaneHView, 100);
         layeredPane.add(textPaneHView2, 100);
 
@@ -58,6 +65,7 @@ public class GUI extends JTextPane {
 
         layeredPane.add(errorPane, 286);
         layeredPane.add(inventoryPane, 286);
+        layeredPane.add(healthPane, 286);
         layeredPane.setBackground(Color.black);
         layeredPane.setPreferredSize(new Dimension((int) WIDTH, (int) HEIGHT));
         layeredPane.setFocusable(true);
@@ -66,30 +74,38 @@ public class GUI extends JTextPane {
 
         errorPane.setText("errorPane");
         inventoryPane.setText("invPane");
+        inventoryPane.setText("healthPane");
         Point p = new Point(10, 10);
         Point p2 = new Point(1000, 0);
         Point p3 = new Point(1400, 250);
-        Point p4 = new Point(1000, 19);
+        Point p4 = new Point(1000, 210);
         Point p5 = new Point(1400, 10);
-        Point p6 = new Point(10, 700);
+        Point p6 = new Point(1000, 10);
         errorPane.setForeground(Color.white);
-        errorPane.setLocation(p4);
+        errorPane.setLocation(p5);
+
+        inventoryPane.setForeground(Color.white);
+        inventoryPane.setLocation(p4);
+
+        healthPane.setForeground(Color.white);
+        healthPane.setLocation(p6);
+        /*
         textPane.setLocation(p6);
         textPane.setSize(new Dimension(500, 30));
         textPane.setBackground(Color.black);
-        inventoryPane.setForeground(Color.white);
-        inventoryPane.setLocation(p5);
         textPane.setFont(fontMed);
         textPane.setForeground(Color.white);
+            */
         textPaneHView.setLocation(p);
         textPaneHView2.setLocation(p);
+
         textPaneXView.setLocation(p2);
         textPaneYView.setLocation(p3);
         textPaneXView2.setLocation(p2);
         textPaneYView2.setLocation(p3);
-
         textPaneYView.setText("hello");
         textPaneXView.setText("Hello");
+
         panel.add(layeredPane);
         setPanel();
         panel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
@@ -100,6 +116,7 @@ public class GUI extends JTextPane {
         panel.setBackground(Color.black);
         errorPane.setBorder(BorderFactory.createLineBorder(Color.white));
         inventoryPane.setBorder(BorderFactory.createLineBorder(Color.white));
+        healthPane.setBorder(BorderFactory.createLineBorder(Color.white));
         textPaneXView2.setBorder(BorderFactory.createLineBorder(Color.white));
         textPaneHView.setBorder(BorderFactory.createLineBorder(Color.white));
         textPaneHView2.setBorder(BorderFactory.createLineBorder(Color.white));
