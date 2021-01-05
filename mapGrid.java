@@ -2,13 +2,13 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class mapGrid {
-    public static int maxX = 200;
-    public static int maxY = 500;
+    public static int maxX = 400;
+    public static int maxY = 200;
     public static tileSet[][] map = new tileSet[maxX][maxY];
     public static double[] heightmap = new double[maxX];
     public static Random rand = new Random();
 
-    mapGrid(int seed) {
+    mapGrid(int seed){
         boolean regular = true;
         if (regular) {
             String tileType;
@@ -16,15 +16,15 @@ public class mapGrid {
             //generates heightmap
             for (int x = 0; x < maxX; x++) {
                 double starting_depth = 10;
-                double slope = 0.25; //slope of the terrain before modifications (slope downwards)
-                double sin_weight = 5; //heigher values will amke the terrain look like a sin graph
+                double slope = 0; //slope of the terrain before modifications (slope downwards)
+                double sin_weight = 1; //heigher values will amke the terrain look like a sin graph
                 double noise_weight = 1; ///heigher values makes the terrain more noisier and random
 
                 //adds random noise
                 heightmap[x] = noise_weight * SimplexNoise.noise(rand.nextInt(10), 0);
 
                 //slope trend of terrain
-                heightmap[x] = heightmap[x] + starting_depth + slope * x + starting_depth + 50 * Math.pow(2.7, -0.05 * Math.pow((x- 20), 2));;
+                heightmap[x] = heightmap[x] + starting_depth + slope * x;
 
                 //adds sinosoidal noise
                 heightmap[x] = heightmap[x] + sin_weight * Math.sin(0.25 * x);
@@ -69,16 +69,18 @@ public class mapGrid {
             boolean[][] cellmap = new boolean[maxX][maxY];
             for (int x = 0; x < maxX; x++) {
                 for (int y = 0; y < maxY; y++) {
+                    if (y > 30 && y < 80) {
+                        cellmap[x][y] = false;
+                    } else {
                         cellmap[x][y] = true;
+                    }
                 }
             }
-            double seed_chance = 53;
+            double seed_chance = 45;
             for (int x = 0; x < maxX; x++) {
                 for (int y = 0; y < maxY; y++) {
-                    if (y > heightmap[x] + 25 && y < 150 && x > 40) {
-                        if (rand.nextInt(100) < seed_chance) {
-                            cellmap[x][y] = false; //false means water
-                        }
+                    if (rand.nextInt(100) < seed_chance) {
+                        cellmap[x][y] = true; //false means water
                     }
                 }
             }
@@ -87,10 +89,8 @@ public class mapGrid {
             }
             for (int x = 0; x < maxX; x++) {
                 for (int y = 0; y < maxY; y++) {
-                    if (y > heightmap[x] + 15 && y < 150 && x > 40) {
-                        if (!cellmap[x][y]) {
-                            map[x][y].tileType = "water";
-                        }
+                    if (!cellmap[x][y]) {
+                        map[x][y].tileType = "water";
                     }
                 }
             }
@@ -101,16 +101,14 @@ public class mapGrid {
                 for (int x = 0; x < maxX; x++) {
                     try {
                         if (map[x][y + 1].tileType.equals("earth") && map[x][y].tileType.equals("water")) {
-                            if (y < heightmap[x] + 25) {
-                                if (rand.nextInt(PlantFrequency) == 0) {
-                                    map[x][y].tileType = "kelp";
+                            if (rand.nextInt(PlantFrequency) == 0) {
+                                map[x][y].tileType = "kelp";
 
-                                    int kelpType = rand.nextInt(6) + 1;
+                                int kelpType = rand.nextInt(6) + 1;
 
-                                    for (int z = 1; z < kelpType; z++) {
-                                        if (map[x][y - z].tileType.equals("water")) {
-                                            map[x][y - z].tileType = "kelp";
-                                        }
+                                for (int z = 1; z < kelpType; z++) {
+                                    if (map[x][y - z].tileType.equals("water")) {
+                                        map[x][y - z].tileType = "kelp";
                                     }
                                 }
                             }
@@ -206,28 +204,12 @@ public class mapGrid {
             }
 
 
+
+
         } else {
             maxX = 100;
             maxY = 100;
             String tileType;
-            //labels tiles air/water based on integer
-            for (int x = 0; x < maxX; x++) {
-                double starting_depth = 10;
-                double slope = 1; //slope of the terrain before modifications (slope downwards)
-                double sin_weight = 1; //heigher values will amke the terrain look like a sin graph
-                double noise_weight = 3; ///heigher values makes the terrain more noisier and random
-
-                //adds random noise
-                heightmap[x] = noise_weight * SimplexNoise.noise(rand.nextInt(10), 0);
-
-                //slope trend of terrain
-                heightmap[x] = heightmap[x] + starting_depth + 100 * Math.pow(2.7, -0.05 * Math.pow((x- 20), 2));
-
-                //adds sinosoidal noise
-                heightmap[x] = heightmap[x] + sin_weight * Math.sin(0.25 * x);
-
-            }
-
             //labels tiles air/water based on integer
             for (int y = 0; y < maxY; y++) {
                 for (int x = 0; x < maxX; x++) {
@@ -238,15 +220,6 @@ public class mapGrid {
                     }
                     tileSet a = new tileSet(tileType);
                     map[x][y] = a;
-                }
-            }
-
-            //labels tiles water/earth based on height map
-            for (int y = 0; y < maxY; y++) {
-                for (int x = 0; x < maxX; x++) {
-                    if (y > 20 + heightmap[x]) {
-                        map[x][y].tileType = "earth";
-                    }
                 }
             }
         }
