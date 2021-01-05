@@ -11,6 +11,8 @@ public class MainLoop {
     public static Random rand = new Random();
     public static Scanner sc = new Scanner(System.in);
     public static GUI gui = new GUI(); //THIS
+    public static playerInv Inv = new playerInv();
+    public static mapGrid map = new mapGrid(1000);
 
     public static int playerX = 20;
     public static int playerY = 5;
@@ -29,37 +31,45 @@ public class MainLoop {
     public static boolean displayAll = false;
     public static String input = "starting_input";
 
-    public static playerInv Inv = new playerInv();
-    public static mapGrid map = new mapGrid(1000);
     public static String direction = "N";
     public static int playerLightVal = 128;
-
     public static boolean playerInteract = true;
 
+    //health
     public static int health = 10;
     public static int health_max = 10;
 
+    //oxygen
     public static int oxygen = 100;
     public static int oxygen_max = 109;
     public static int oxygenCount = 0;
-    public static int oxygenCountMax = 10;
+    public static int oxygenCountMax = 5;
+    //oxygen refill
     public static int oxygenRefillRate = 3;
     public static int bubbleOxygenRate = 30;
+    //oxygen depletion
+    public static int oxygenDepletionDamage = 1;
+    public static int oxygenDamageRate = 50;
+    public static int oxygenDamageCounter = 50;
 
+    //food
     public static int food = 10;
     public static int food_max = 10;
     public static int foodCount = 0;
-    public static int foodCountMax = 400;
+    public static int foodCountMax = 200;
+    //food depletion
+    public static int foodDepletionDamage = 1;
+    public static int foodDamageRate = 50;
+    public static int foodDamageCounter = 50;
 
+    //X fish damage
     public static int hitCountX = 0;
     public static int hitRefreshX = 10;
     public static int hitDamagehX = 1;
 
-
-
-
     public static ArrayList<Entity> entities = new ArrayList<Entity>();
     public static ArrayList<Entity> entitiesR = new ArrayList<Entity>();
+
     public static void main(String[] args) {
         //game variables
         boolean running = true;
@@ -71,22 +81,27 @@ public class MainLoop {
             entityRenderUpdater();
             display(map);
             processInput(map);
+            Inv.invSelector(input);
             input = "";
 
             //health
             checkForDamage();
+            updateDepletionDamage();
 
-            //Sidebars
-            gui.inventoryFieldUpdater("hello vietnam" + Inv.retString());
+            //Status bar refresh
             foodRefresh();
             oxygenRefresh();
             oxygenRefill();
             barRefresh();
 
-            map.mapRefresh(); //updates fruit and kelp growth on mapgrid
+            //inventory refresh
+            gui.inventoryFieldUpdater("hello vietnam" + Inv.retString());
+            tagPaneUpdater();
+
             entityTicker(); //updates entity tick count which controls entity behaviour
             entityUpdater(); //executes all entity movement
             entitySpawner(); //sapwns bubbless
+            map.mapRefresh(); //updates fruit and kelp growth on mapgrid
 
             //daycount
             dayCount++;
@@ -374,7 +389,7 @@ public class MainLoop {
                         if (rand.nextInt(1000) == 0) {
                             entities.add(new Entity("o", "fish", x, y, new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255)), 5));
                         } else {
-                            if (rand.nextInt(2000) == 0) {
+                            if (rand.nextInt(10000) == 0) {
                                 entities.add(new Entity("X", "hunter", x, y, new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255)), 0));
                             }
                         }
@@ -562,15 +577,13 @@ public class MainLoop {
     }
     public static void processAction(mapGrid map) {
         if (grabbing) {
-
-            //check for something to grab
-            //then change map or entity list / amend inv
+            //check for something to grab /then change map or entity list / amend inv
             for (Entity entity : entitiesR) {
                 if (entity.type.equals("fish")) {
                     if (entity.x <= playerX + 1 && entity.x >= playerX - 1) {
                         if (entity.y <= playerY + 1 && entity.y >= playerY - 1) {
                             entity.flagForRemoval = true;
-                            MainLoop.Inv.addItem("Fish");
+                            MainLoop.Inv.addItem("fish");
                         }
                     }
                 }
@@ -609,8 +622,10 @@ public class MainLoop {
         if(MainLoop.input.equals("q")){
             //System.out.print("q");
             if(mineCounter < mineCounterMax){
+                //System.out.print("s");
                 mineCounter++;
             }else{
+                //System.out.print("Q");
                 mineCounter = 0;
                 //apply mine
                 //mining down into not air or water
@@ -635,6 +650,7 @@ public class MainLoop {
                     }
                 }
 
+                //System.out.print("S");
                 //mining downleft into not air or water
                 if (direction.equals("SE")
                         && ((
@@ -821,7 +837,15 @@ public class MainLoop {
             }
         }
         else{
+            //System.out.print("0");
             mineCounter = 0;
+        }
+        if(MainLoop.input.equals("e")){
+           if(Inv.isEatable()){
+               health += Inv.getHealthFrom();
+               food += Inv.getFoodFrom();
+               Inv.removeSelected();
+           }
         }
 
         grabbing = false;
@@ -996,18 +1020,13 @@ public class MainLoop {
     }
 
     //char stat functions
+
+    //Oxygen
     public static void oxygenRefresh(){
         oxygenCount++;
         if(oxygenCount == oxygenCountMax){
             oxygenCount = 0;
             oxygen--;
-        }
-    }
-    public static void foodRefresh(){
-        foodCount++;
-        if(foodCount == foodCountMax){
-            foodCount = 0;
-            food--;
         }
     }
     public static void oxygenRefill(){
@@ -1062,7 +1081,50 @@ public class MainLoop {
             }
         }
     }
+    //food
+    public static void foodRefresh(){
+        foodCount++;
+        if(foodCount == foodCountMax){
+            foodCount = 0;
+            food--;
+        }
+    }
+    //bars
+    public static void updateDepletionDamage(){
+        if(oxygen < 1){
+            oxygenDamageCounter++;
+                    if(oxygenDamageCounter >= oxygenDamageRate)
+                    {
+                        oxygenDamageCounter = 0;
+                        health = health - oxygenDepletionDamage;
+                    }
+        }else{
+            oxygenDamageCounter = 0;
+        }
+        if(food < 1){
+            foodDamageCounter++;
+            if(foodDamageCounter == foodDamageRate)
+            {
+                foodDamageCounter = 0;
+                health = health - foodDepletionDamage;
+            }
+        }else{
+            foodDamageCounter = 0;
+        }
+    }
+    public static void maxBarLimiter(){
+        if(oxygen > oxygen_max){
+            oxygen = oxygen_max;
+        }
+        if(food > food_max){
+            food = food_max;
+        }
+        if(health > health_max){
+            health = health_max;
+        }
+    }
     public static void barRefresh(){
+        maxBarLimiter();
         String healthStr = "";
         for(int x = 0; x < (health); x++){
             healthStr = healthStr + "H";
@@ -1080,6 +1142,16 @@ public class MainLoop {
         gui.healthPane.append("Food:   " + foodStr + "\n",Color.cyan);
         gui.healthPane.append("Oxygen: " + oxyStr + "\n",Color.white);
     }
+    //Inv
+    public static void tagPaneUpdater(){
+        gui.tagPane.setText("");
+        if(Inv.isEatable()){
+            gui.tagPane.append("edible");
+        }else {
+            //gui.tagPane.append("edible");
+        }
+    }
+    //Hits and damage
     public static void updateHitCounts(){
         if(hitCountX > 0 ){
             hitCountX--;
@@ -1099,48 +1171,9 @@ public class MainLoop {
                         health = health - hitDamagehX;
                         hitCountX = hitRefreshX;
                     }
-                } else if (map.map[playerX][playerY].tileType == "air") {
-                    oxygen = oxygen + oxygenRefillRate;
-                    if (oxygen > oxygen_max) {
-                        oxygen = oxygen_max;
-                    }
-                } else if (map.map[playerX][playerY + 1].tileType == "air") {
-                    oxygen = oxygen + oxygenRefillRate;
-                    if (oxygen > oxygen_max) {
-                        oxygen = oxygen_max;
-                    }
-                } else if (map.map[playerX + 1][playerY - 1].tileType == "air") {
-                    oxygen = oxygen + oxygenRefillRate;
-                    if (oxygen > oxygen_max) {
-                        oxygen = oxygen_max;
-                    }
-                } else if (map.map[playerX + 1][playerY].tileType == "air") {
-                    oxygen = oxygen + oxygenRefillRate;
-                    if (oxygen > oxygen_max) {
-                        oxygen = oxygen_max;
-                    }
-                } else if (map.map[playerX + 1][playerY + 1].tileType == "air") {
-                    oxygen = oxygen + oxygenRefillRate;
-                    if (oxygen > oxygen_max) {
-                        oxygen = oxygen_max;
-                    }
-                } else if (map.map[playerX - 1][playerY - 1].tileType == "air") {
-                    oxygen = oxygen + oxygenRefillRate;
-                    if (oxygen > oxygen_max) {
-                        oxygen = oxygen_max;
-                    }
-                } else if (map.map[playerX - 1][playerY + 1].tileType == "air") {
-                    oxygen = oxygen + oxygenRefillRate;
-                    if (oxygen > oxygen_max) {
-                        oxygen = oxygen_max;
-                    }
-                } else if (map.map[playerX - 1][playerY].tileType == "air") {
-                    oxygen = oxygen + oxygenRefillRate;
-                    if (oxygen > oxygen_max) {
-                        oxygen = oxygen_max;
-                    }
                 }
             }
         }//for every entity
     }
+
 }

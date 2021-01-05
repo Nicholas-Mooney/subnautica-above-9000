@@ -21,6 +21,7 @@ public class GUI extends JTextPane {
     //inv
     JTextAreaA inventoryPane = new JTextAreaA();
     JTextAreaA healthPane = new JTextAreaA();
+    JTextAreaA tagPane = new JTextAreaA();
 
     //map
     JTextAreaA textPaneHView = new JTextAreaA();
@@ -54,6 +55,7 @@ public class GUI extends JTextPane {
         newTextPane(errorPane, fontMed, new Dimension(WIDTH /5 - 35, HEIGHT*4/7));
         newTextPane(inventoryPane, fontMed, new Dimension(WIDTH /5 - 35, HEIGHT*4/7));
         newTextPane(healthPane, fontMed, new Dimension(WIDTH /5 - 35, HEIGHT*1/7));
+        newTextPane(tagPane, fontMed, new Dimension(WIDTH /5 - 35, HEIGHT*1/7));
         layeredPane.add(textPaneHView, 100);
         layeredPane.add(textPaneHView2, 100);
 
@@ -66,6 +68,7 @@ public class GUI extends JTextPane {
         layeredPane.add(errorPane, 286);
         layeredPane.add(inventoryPane, 286);
         layeredPane.add(healthPane, 286);
+        layeredPane.add(tagPane, 286);
         layeredPane.setBackground(Color.black);
         layeredPane.setPreferredSize(new Dimension((int) WIDTH, (int) HEIGHT));
         layeredPane.setFocusable(true);
@@ -74,13 +77,15 @@ public class GUI extends JTextPane {
 
         errorPane.setText("errorPane");
         inventoryPane.setText("invPane");
-        inventoryPane.setText("healthPane");
+        healthPane.setText("healthPane");
+        tagPane.setText("tagPane");
         Point p = new Point(10, 10);
         Point p2 = new Point(1000, 0);
         Point p3 = new Point(1400, 250);
         Point p4 = new Point(1000, 210);
         Point p5 = new Point(1400, 10);
         Point p6 = new Point(1000, 10);
+        Point p7 = new Point(1225, 210);
         errorPane.setForeground(Color.white);
         errorPane.setLocation(p5);
 
@@ -89,6 +94,9 @@ public class GUI extends JTextPane {
 
         healthPane.setForeground(Color.white);
         healthPane.setLocation(p6);
+
+        tagPane.setForeground(Color.white);
+        tagPane.setLocation(p7);
         /*
         textPane.setLocation(p6);
         textPane.setSize(new Dimension(500, 30));
@@ -117,6 +125,7 @@ public class GUI extends JTextPane {
         errorPane.setBorder(BorderFactory.createLineBorder(Color.white));
         inventoryPane.setBorder(BorderFactory.createLineBorder(Color.white));
         healthPane.setBorder(BorderFactory.createLineBorder(Color.white));
+        tagPane.setBorder(BorderFactory.createLineBorder(Color.white));
         textPaneXView2.setBorder(BorderFactory.createLineBorder(Color.white));
         textPaneHView.setBorder(BorderFactory.createLineBorder(Color.white));
         textPaneHView2.setBorder(BorderFactory.createLineBorder(Color.white));
@@ -185,6 +194,9 @@ public class GUI extends JTextPane {
                     case (KeyEvent.VK_G) -> {
                         MainLoop.input = "g";
                     }
+                    case (KeyEvent.VK_E) -> {
+                        MainLoop.input = "e";
+                    }
                     case (KeyEvent.VK_Q) -> {
                         MainLoop.input = "q";
                         Q_HELD = true;
@@ -198,6 +210,12 @@ public class GUI extends JTextPane {
                     }
                     case (KeyEvent.VK_F2) -> {
                         MainLoop.playerInteract = !MainLoop.playerInteract;
+                    }
+                    case (KeyEvent.VK_DOWN) -> {
+                        MainLoop.input = "downArrow";
+                    }
+                    case (KeyEvent.VK_UP) -> {
+                        MainLoop.input = "upArrow";
                     }
 
                     //fontup
