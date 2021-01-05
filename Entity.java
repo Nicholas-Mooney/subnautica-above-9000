@@ -1,3 +1,5 @@
+import com.sun.tools.javac.Main;
+
 import java.awt.*;
 
 public class Entity {
@@ -11,10 +13,14 @@ public class Entity {
     boolean flagForRemoval = false;
     int startingDivisible = 0;
     boolean hasStartingDivisible = false;
+    int ID = 0;
 
     FishAI AI = new FishAI(x, y, false, 0, 0, false, 0, 0);
 
     public Entity (String chara, String type, int x, int y, Color color,int lightPower) {
+
+
+        this.ID = MainLoop.rand.nextInt(10000000);
         this.chara = chara;
         this.type = type;
         this.x = x;

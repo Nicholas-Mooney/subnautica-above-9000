@@ -15,7 +15,7 @@ public class mapGrid {
 
             //generates heightmap
             for (int x = 0; x < maxX; x++) {
-
+                double starting_depth = 10;
                 double slope = 0.25; //slope of the terrain before modifications (slope downwards)
                 double sin_weight = 10; //heigher values will amke the terrain look like a sin graph
                 double noise_weight = 1; ///heigher values makes the terrain more noisier and random
@@ -24,7 +24,7 @@ public class mapGrid {
                 heightmap[x] = noise_weight * SimplexNoise.noise(rand.nextInt(10), 0);
 
                 //slope trend of terrain
-                heightmap[x] = heightmap[x] - 10 + slope * x;
+                heightmap[x] = heightmap[x] + starting_depth + slope * x;
 
                 //adds sinosoidal noise
                 heightmap[x] = heightmap[x] + sin_weight * Math.sin(0.25 * x);

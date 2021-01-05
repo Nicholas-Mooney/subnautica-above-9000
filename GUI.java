@@ -5,7 +5,10 @@ import java.awt.event.KeyListener;
 import java.security.Key;
 import java.util.ArrayList;
 
+import static java.awt.font.TextAttribute.FONT;
+
 public class GUI extends JTextPane {
+    public static int fontSize = 13;
     public static ArrayList<String> lines = new ArrayList<String>();
     public static ArrayList<Color> linesColor = new ArrayList<Color>();
     JFrame frame = new JFrame();
@@ -30,7 +33,7 @@ public class GUI extends JTextPane {
 
     static int WIDTH = 1295;
     static int HEIGHT = 695;
-    Font fontMed = new Font("Monospaced", Font.BOLD, 14);
+    Font fontMed = new Font("Monospaced", Font.BOLD, 15);
     public GUI(){
         
         newTextPane(textPaneXView, fontMed, new Dimension(300, 250));
@@ -39,8 +42,8 @@ public class GUI extends JTextPane {
         newTextPane(textPaneYView, fontMed, new Dimension(200, 200));
         newTextPane(textPaneYView2, fontMed, new Dimension(200, 200));
 
-        newTextPane(textPaneHView, fontMed, new Dimension(WIDTH*3/5 - 100, HEIGHT*6/7));
-        newTextPane(textPaneHView2, fontMed, new Dimension(WIDTH*3/5 - 100, HEIGHT*6/7));
+        newTextPane(textPaneHView, fontMed, new Dimension(WIDTH*3/5 + 200, HEIGHT*6/7));
+        newTextPane(textPaneHView2, fontMed, new Dimension(WIDTH*3/5 + 200, HEIGHT*6/7));
 
         newTextPane(errorPane, fontMed, new Dimension(WIDTH /5 - 35, HEIGHT*4/7));
         newTextPane(inventoryPane, fontMed, new Dimension(WIDTH /5 - 35, HEIGHT*4/7));
@@ -64,10 +67,10 @@ public class GUI extends JTextPane {
         errorPane.setText("errorPane");
         inventoryPane.setText("invPane");
         Point p = new Point(10, 10);
-        Point p2 = new Point(700, 0);
-        Point p3 = new Point(700, 250);
-        Point p4 = new Point(WIDTH*4/5 - 2, 19);
-        Point p5 = new Point(700, 10);
+        Point p2 = new Point(1000, 0);
+        Point p3 = new Point(1400, 250);
+        Point p4 = new Point(1000, 19);
+        Point p5 = new Point(1400, 10);
         Point p6 = new Point(10, 700);
         errorPane.setForeground(Color.white);
         errorPane.setLocation(p4);
@@ -138,6 +141,8 @@ public class GUI extends JTextPane {
     public static boolean UP_HELD = false;
     public static boolean LEFT_HELD = false;
     public static boolean RIGHT_HELD = false;
+   // public static boolean SPACE_HELD = false;
+    public static boolean Q_HELD = false;
     public void addKeyListenerHere(JComponent comp) {
         comp.addKeyListener(new KeyListener() {
 
@@ -165,14 +170,45 @@ public class GUI extends JTextPane {
                     }
                     case (KeyEvent.VK_Q) -> {
                         MainLoop.input = "q";
-                    }
-                    case (KeyEvent.VK_F1) -> {
-                        MainLoop.displayAll = !MainLoop.displayAll;
+                        Q_HELD = true;
                     }
                     case (KeyEvent.VK_SPACE) -> {
                         //MainLoop.input = "g";
                         MainLoop.grabbing = true;
                     }
+                    case (KeyEvent.VK_F1) -> {
+                        MainLoop.displayAll = !MainLoop.displayAll;
+                    }
+                    case (KeyEvent.VK_F2) -> {
+                        MainLoop.playerInteract = !MainLoop.playerInteract;
+                    }
+
+                    //fontup
+                    case (KeyEvent.VK_F3 ) -> {
+                        fontSize--;
+                        MainLoop.gui.textPaneHView.setFont(new Font("Monospaced", Font.BOLD, fontSize));
+                        MainLoop.gui.textPaneHView2.setFont(new Font("Monospaced", Font.BOLD, fontSize));
+                    }
+                    //fontdown
+                    case (KeyEvent.VK_F4 ) -> {
+                        fontSize++;
+                        MainLoop.gui.textPaneHView.setFont(new Font("Monospaced", Font.BOLD, fontSize));
+                        MainLoop.gui.textPaneHView2.setFont(new Font("Monospaced", Font.BOLD, fontSize));
+                    }
+                    //viewport
+                    case (KeyEvent.VK_F5 ) -> {
+                        MainLoop.viewportX--;
+                    }
+                    case (KeyEvent.VK_F6 ) -> {
+                        MainLoop.viewportX++;
+                    }//viewportY
+                    case (KeyEvent.VK_F7 ) -> {
+                        MainLoop.viewportY--;
+                    }
+                    case (KeyEvent.VK_F8 ) -> {
+                        MainLoop.viewportY++;
+                    }
+
                     /*
                     case () -> {
 
@@ -195,6 +231,9 @@ public class GUI extends JTextPane {
                     }
                     case (KeyEvent.VK_D) -> {
                         RIGHT_HELD = false;
+                    }
+                    case (KeyEvent.VK_Q) -> {
+                        Q_HELD = false;
                     }
                 }
             }
