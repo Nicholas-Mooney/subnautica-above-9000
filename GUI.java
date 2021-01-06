@@ -42,7 +42,7 @@ public class GUI extends JTextPane {
     static int HEIGHT = 695;
     Font fontMed = new Font("Monospaced", Font.BOLD, 17);
     public GUI(){
-        
+
         newTextPane(textPaneXView, fontMed, new Dimension(300, 250));
         newTextPane(textPaneXView2, fontMed, new Dimension(300, 250));
 
@@ -167,7 +167,7 @@ public class GUI extends JTextPane {
     public static boolean UP_HELD = false;
     public static boolean LEFT_HELD = false;
     public static boolean RIGHT_HELD = false;
-   // public static boolean SPACE_HELD = false;
+    // public static boolean SPACE_HELD = false;
     public static boolean Q_HELD = false;
     public void addKeyListenerHere(JComponent comp) {
         comp.addKeyListener(new KeyListener() {

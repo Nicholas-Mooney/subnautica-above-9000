@@ -27,7 +27,7 @@ public class MainLoop {
     public static int dayCount = 2000;
     public static int mineCounter = 0;
     public static int mineCounterMax = 5;
-
+    public static boolean tookDamage = false; //adventure
     public static boolean displayAll = false;
     public static String input = "starting_input";
 
@@ -51,7 +51,6 @@ public class MainLoop {
     public static int oxygenDepletionDamage = 1;
     public static int oxygenDamageRate = 50;
     public static int oxygenDamageCounter = 50;
-
     //food
     public static int food = 10;
     public static int food_max = 10;
@@ -61,38 +60,25 @@ public class MainLoop {
     public static int foodDepletionDamage = 1;
     public static int foodDamageRate = 50;
     public static int foodDamageCounter = 50;
-
     //X fish damage
     public static int hitCountX = 0;
     public static int hitRefreshX = 10;
     public static int hitDamagehX = 1;
-
     public static ArrayList<Entity> entities = new ArrayList<Entity>();
     public static ArrayList<Entity> entitiesR = new ArrayList<Entity>();
 
     public static void main(String[] args) {
-        //game variables
-        boolean running = true;
-        Inv.addItem("kyanite");
-
         //game loop
-        while (running) {
-            wait(50);
+        while (true) {
+            wait(20);
             entityRenderUpdater();
             display(map);
+
             processInput(map);
             Inv.invSelector(input);
             input = "";
+            manageVars();
 
-            //health
-            checkForDamage();
-            updateDepletionDamage();
-
-            //Status bar refresh
-            foodRefresh();
-            oxygenRefresh();
-            oxygenRefill();
-            barRefresh();
 
             //inventory refresh
             gui.inventoryFieldUpdater("hello vietnam" + Inv.retString());
@@ -108,9 +94,47 @@ public class MainLoop {
             if (dayCount > 3000) {
                 dayCount = dayCount - 3000;
             }
-        }
-    }
 
+
+        }
+
+    }
+    public static void manageVars() {
+        tookDamage = false; //adventure
+        if (health <= 1) {
+            tookDamage = true;
+        }
+        if (health < 0) {
+            health = 0;
+        }
+        if (oxygen < 0) {
+            oxygen = 0;
+        }
+        if (oxygen > oxygen_max) {
+            oxygen = oxygen_max;
+        }
+        if (health > health_max) {
+            health = health_max;
+        }
+        if (food < 0) {
+            food = 0;
+        }
+        if (food > food_max) {
+            food = food_max;
+        }
+        if (hitCountX > 7) { //adventure
+            if (health > 0) {
+                tookDamage = true;
+            }
+        }
+        //health
+        checkForDamage();
+        updateDepletionDamage();
+        foodRefresh();
+        oxygenRefresh();
+        oxygenRefill();
+        barRefresh();
+    }
     public static void wait(int x) {
         try {
             Thread.sleep(x);
@@ -160,18 +184,28 @@ public class MainLoop {
                 try {
                     //add player
                     if (y == playerY && x == playerX) {
-                        textPane.append("P ");
-
+                        if (!tookDamage) {
+                            textPane.append("P ");
+                        } else {
+                            textPane.append("P ", Color.red);
+                        }
                         //add entities
                     } else if (checkEntity(x, y)) {
-                        textPane.append(getEntityChar(x, y) + " ", getShade(getEntityColor(x, y), MForTile(mapGrid.map[x][y], x, y, xArr, yArr, pArr, direction)));
-
+                        if (!tookDamage) {
+                            textPane.append(getEntityChar(x, y) + " ", getShade(getEntityColor(x, y), MForTile(mapGrid.map[x][y], x, y, xArr, yArr, pArr, direction)));
+                        } else {
+                            textPane.append(getEntityChar(x, y) + " ", getShade(getBloodEntityColor(x, y), MForTile(mapGrid.map[x][y], x, y, xArr, yArr, pArr, direction)));
+                        }
                     } else {
                         if (x >= mapGrid.maxX || y >= mapGrid.maxY || y < 0 || x < 0) {
                             textPane.append("| ", Color.white);
                         } else {
                             //add tile
-                            textPane.append(charForTile(mapGrid.map[x][y]) + " ", getShade(getTileColor(mapGrid.map[x][y].tileType), MForTile(mapGrid.map[x][y], x, y, xArr, yArr, pArr, direction)));
+                            if (!tookDamage) {
+                                textPane.append(charForTile(mapGrid.map[x][y]) + " ", getShade(getTileColor(mapGrid.map[x][y].tileType), MForTile(mapGrid.map[x][y], x, y, xArr, yArr, pArr, direction)));
+                            } else {
+                                textPane.append(charForTile(mapGrid.map[x][y]) + " ", getShade(getBloodTileColor(mapGrid.map[x][y].tileType), MForTile(mapGrid.map[x][y], x, y, xArr, yArr, pArr, direction)));
+                            }
                         }
                     }
                 } catch (Exception ignored) {
@@ -182,7 +216,7 @@ public class MainLoop {
         }
         textPane.setVisible(true);
         textPane2.setVisible(false);
-    }
+    } //adventure
     public static boolean checkEntity(int x, int y) {
         for (Entity entity : entitiesR) {
             if (entity.x == x && entity.y == y) {
@@ -210,7 +244,6 @@ public class MainLoop {
 
     //entity manager
     public static int entityTickCount = 0;
-
     public static void entityTicker() {
         entityTickCount++;
     }
@@ -251,6 +284,7 @@ public class MainLoop {
                 entity.speed = 4;
                 //ENTITY LIGHTING MODULATOR
                 entity.lightPower = (int) (3 * Math.sin(0.25*entityTickCount) + 5.0);
+                playerLightVal = (int) (16 * Math.sin(0.05*entityTickCount) + 64.0);
                 //predator avoider
                 for (Entity entity2 : entitiesR) {
                     if (entity.ID != entity2.ID) {
@@ -270,7 +304,7 @@ public class MainLoop {
                         entity.AI.avoid = true;
                         entity.AI.xa = playerX;
                         entity.AI.ya = playerY;
-                        entity.speed = 1;
+                        entity.speed = 2;
                     }
                 }
 
@@ -304,17 +338,17 @@ public class MainLoop {
                 //normal behavior
                 entity.AI.target = false;
                 entity.color = Color.red;
-                entity.speed = 4;
+                entity.speed = 5;
 
                 //scan for "fish" to chase within 10 radius, sets target coordinates and targeting boolean to fish within radius
                 for (Entity entity2 : entitiesR) {
                     if (entity.ID != entity2.ID) {
                         if (entity2.type.equals("fish")) {
-                            if (10 > Math.sqrt((entity2.y - entity.y) * (entity2.y - entity.y) + (entity2.x - entity.x) * (entity2.x - entity.x))) {
+                            if (7 > Math.sqrt((entity2.y - entity.y) * (entity2.y - entity.y) + (entity2.x - entity.x) * (entity2.x - entity.x))) {
                                 entity.AI.target = true;
                                 entity.AI.xt = entity2.x;
                                 entity.AI.yt = entity2.y;
-                                entity.speed = 2;
+                                entity.speed = 3;
                             }
                         }
                     }
@@ -322,11 +356,11 @@ public class MainLoop {
 
                 if (playerInteract) {
                     //attack players within 10 ft
-                    if (10 > Math.sqrt((playerY - entity.y) * (playerY - entity.y) + (playerX - entity.x) * (playerX - entity.x))) {
+                    if (7 > Math.sqrt((playerY - entity.y) * (playerY - entity.y) + (playerX - entity.x) * (playerX - entity.x))) {
                         entity.AI.target = true;
                         entity.AI.xt = playerX;
                         entity.AI.yt = playerY;
-                        entity.speed = 2;
+                        entity.speed = 3;
                     }
                 }
                 if (entityTickCount % entity.speed == 0) {
@@ -363,7 +397,6 @@ public class MainLoop {
             }
         }
     }
-
     public static void entityRenderUpdater() {
         entitiesR.clear();
         for (Entity entity : entities) {
@@ -377,27 +410,37 @@ public class MainLoop {
         gui.errorFieldUpdater("R: " + entitiesR.size() + " T: " + entities.size(), Color.white);
     }
     public static void entitySpawner() {
-        for (int x = 0; x < mapGrid.maxX; x++) {
-            for (int y = 0; y < mapGrid.maxY; y++) {
-                if (mapGrid.map[x][y].tileType.equals("brain")) {
-                    if (rand.nextInt(200) < 1) {
-                        entities.add(new Entity("O", "bubble", x, y, new Color(255,255,255), 0));
+        //nearby spawns
+        for (int x = playerX - viewportX; x < playerX + viewportX * 2; x++) {
+            for (int y = playerY - viewportY; y < playerY + viewportY * 2; y++) {
+                if (x > 0 && x < mapGrid.maxX && y > 0 && y < mapGrid.maxY) {
+                    if (mapGrid.map[x][y].tileType.equals("brain")) {
+                        if (rand.nextInt(200) < 1) {
+                            entities.add(new Entity("O", "bubble", x, y, new Color(255, 255, 255), 0));
+                        }
                     }
                 }
-                if (mapGrid.map[x][y].tileType.equals("water")) {
-                    if (entities.size() < 100) {
-                        if (rand.nextInt(1000) == 0) {
-                            entities.add(new Entity("o", "fish", x, y, new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255)), 5));
-                        } else {
-                            if (rand.nextInt(10000) == 0) {
-                                entities.add(new Entity("X", "hunter", x, y, new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255)), 0));
+            }
+        }
+        //global spawns
+        for (int x = 0; x < mapGrid.maxX; x++) {
+            for (int y = 0; y < mapGrid.maxY; y++) {
+                if (x > 0 && x < mapGrid.maxX && y > 0) {
+                    if (mapGrid.map[x][y].tileType.equals("water")) {
+                        if (entities.size() < 100) {
+                            if (rand.nextInt(1000) == 0) {
+                                entities.add(new Entity("o", "fish", x, y, new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255)), 5));
+                            } else {
+                                if (rand.nextInt(2000) == 0) {
+                                    entities.add(new Entity("X", "hunter", x, y, new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255)), 0));
+                                }
                             }
                         }
                     }
                 }
             }
         }
-    }
+    } //adventuerr
 
     //input functions
     public static void processInput(mapGrid map) {
@@ -802,20 +845,20 @@ public class MainLoop {
                 }
                 if (direction.equals("NW")
                         && ((
-                        !(MainLoop.map.map[playerX-1][playerY-1].tileType.equals("water"))
-                                && !(MainLoop.map.map[playerX-1][playerY-1].tileType.equals("air"))))) {
+                        !(mapGrid.map[playerX-1][playerY-1].tileType.equals("water"))
+                                && !(mapGrid.map[playerX-1][playerY-1].tileType.equals("air"))))) {
                     //if water adjacent or above
                     int blockX = playerX-1;
                     int blockY = playerY-1;
-                    if(MainLoop.map.map[blockX - 1][blockY].waterBased() || //left
-                            MainLoop.map.map[blockX + 1][blockY].waterBased() || //right
-                            MainLoop.map.map[blockX-1][blockY-1].waterBased() || //NW
-                            MainLoop.map.map[blockX][blockY-1].waterBased() || //N
-                            MainLoop.map.map[blockX+1][blockY-1].waterBased() //NE
+                    if(mapGrid.map[blockX - 1][blockY].waterBased() || //left
+                            mapGrid.map[blockX + 1][blockY].waterBased() || //right
+                            mapGrid.map[blockX-1][blockY-1].waterBased() || //NW
+                            mapGrid.map[blockX][blockY-1].waterBased() || //N
+                            mapGrid.map[blockX+1][blockY-1].waterBased() //NE
                     ){
                         GetMined(blockX, blockY);
-                        MainLoop.map.map[blockX][blockY].tileType = "water";
-                    }else if(MainLoop.map.map[blockX - 1][blockY].airBased() || //left
+                        mapGrid.map[blockX][blockY].tileType = "water";
+                    }else if(mapGrid.map[blockX - 1][blockY].airBased() || //left
                             MainLoop.map.map[blockX + 1][blockY].airBased() || //right
                             MainLoop.map.map[blockX-1][blockY-1].airBased() || //NW
                             MainLoop.map.map[blockX][blockY-1].airBased() || //N
@@ -841,11 +884,11 @@ public class MainLoop {
             mineCounter = 0;
         }
         if(MainLoop.input.equals("e")){
-           if(Inv.isEatable()){
-               health += Inv.getHealthFrom();
-               food += Inv.getFoodFrom();
-               Inv.removeSelected();
-           }
+            if(Inv.isEatable()){
+                health += Inv.getHealthFrom();
+                food += Inv.getFoodFrom();
+                Inv.removeSelected();
+            }
         }
 
         grabbing = false;
@@ -1012,6 +1055,42 @@ public class MainLoop {
                 return new Color((int) (255), (int) ( 0), (int) (0));
         }
     }
+    public static Color getBloodTileColor (String name) {
+        switch (name) {
+            case "air":
+                return new Color((int) (220), (int) (0), (int) (00));
+            case "water":
+                return new Color(50, 0, 0);
+            case "earth":
+                return new Color(153, 0, 0);
+            case "ore":
+                return new Color(108, 0, 0);
+            case "kelp":
+                return new Color(50, 0, 0);
+            case "brain":
+                return new Color((int) (250), (int) (0), (int) (1));
+            case "fruit":
+                return new Color((int) (250), (int) (0), (int) (0));
+            case "mushroom":
+                return new Color((int) (204), (int) (0), (int) (0));
+            case "mushroom2":
+                return new Color((int) (254), (int) (0), (int) (0));
+            case "mushroom3":
+                return new Color((int) (250), (int) (0), (int) (0));
+            default:
+                return new Color((int) (255), (int) ( 0), (int) (0));
+        }
+    } //adventure
+    public static Color getBloodEntityColor(int x, int y) {
+        for (Entity entity : entitiesR) {
+            if (entity.x == x && entity.y == y) {
+                Color entity_shade = entity.color;
+                entity_shade = new Color(entity.color.getRed(), 0, 0);
+                return entity_shade;
+            }
+        }
+        return Color.BLUE;
+    } //adventure
     public static Color getShade(Color color, double m) {
         double red = m * color.getRed();
         double green = m * color.getGreen();
@@ -1093,11 +1172,11 @@ public class MainLoop {
     public static void updateDepletionDamage(){
         if(oxygen < 1){
             oxygenDamageCounter++;
-                    if(oxygenDamageCounter >= oxygenDamageRate)
-                    {
-                        oxygenDamageCounter = 0;
-                        health = health - oxygenDepletionDamage;
-                    }
+            if(oxygenDamageCounter >= oxygenDamageRate)
+            {
+                oxygenDamageCounter = 0;
+                health = health - oxygenDepletionDamage;
+            }
         }else{
             oxygenDamageCounter = 0;
         }
@@ -1160,20 +1239,22 @@ public class MainLoop {
     public static void checkForDamage() {
         updateHitCounts();
         for (int g = 0; g < entitiesR.size(); g++) {
-            int x = entitiesR.get(g).x; //get x
-            int y = entitiesR.get(g).y; //get y
+            if (entitiesR.get(g).type.equals("hunter")) {
+                int x = entitiesR.get(g).x; //get x
+                int y = entitiesR.get(g).y; //get y
 
-            if (playerX == 1 || playerX == 0 || playerY == 1 || playerY == 0 || playerX == 400 || playerX == 399 || playerY == 200 || playerY == 199) {
-                //dont check near borders
-            } else {
-                if (playerX == x && playerY == y) {
-                    if(hitCountX == 0){
-                        health = health - hitDamagehX;
-                        hitCountX = hitRefreshX;
+                if (playerX == 1 || playerX == 0 || playerY == 1 || playerY == 0 || playerX == 400 || playerX == 399 || playerY == 200 || playerY == 199) {
+                    //dont check near borders
+                } else {
+                    if (playerX == x && playerY == y) {
+                        if (hitCountX == 0) {
+                            health = health - hitDamagehX;
+                            hitCountX = hitRefreshX;
+                        }
                     }
                 }
             }
         }//for every entity
-    }
+    } //adventure
 
 }
