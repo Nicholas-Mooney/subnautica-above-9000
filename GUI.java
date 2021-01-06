@@ -49,8 +49,8 @@ public class GUI extends JTextPane {
         newTextPane(textPaneYView, fontMed, new Dimension(200, 200));
         newTextPane(textPaneYView2, fontMed, new Dimension(200, 200));
 
-        newTextPane(textPaneHView, fontMed, new Dimension(WIDTH*3/5 + 200, HEIGHT*6/7));
-        newTextPane(textPaneHView2, fontMed, new Dimension(WIDTH*3/5 + 200, HEIGHT*6/7));
+        newTextPane(textPaneHView, fontMed, new Dimension(WIDTH*3/5 + 200, HEIGHT*10/7));
+        newTextPane(textPaneHView2, fontMed, new Dimension(WIDTH*3/5 + 200, HEIGHT*10/7));
 
         newTextPane(errorPane, fontMed, new Dimension(WIDTH /5 - 35, HEIGHT*4/7));
         newTextPane(inventoryPane, fontMed, new Dimension(WIDTH /5 - 35, HEIGHT*4/7));
@@ -83,7 +83,7 @@ public class GUI extends JTextPane {
         Point p2 = new Point(1000, 0);
         Point p3 = new Point(1400, 250);
         Point p4 = new Point(1000, 210);
-        Point p5 = new Point(1400, 10);
+        Point p5 = new Point(1500, 10);
         Point p6 = new Point(1000, 10);
         Point p7 = new Point(1225, 210);
         errorPane.setForeground(Color.white);

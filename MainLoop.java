@@ -241,7 +241,6 @@ public class MainLoop {
         }
         return Color.BLUE;
     }
-
     //entity manager
     public static int entityTickCount = 0;
     public static void entityTicker() {
@@ -441,7 +440,6 @@ public class MainLoop {
             }
         }
     } //adventuerr
-
     //input functions
     public static void processInput(mapGrid map) {
         //these functions detect the HELD values from gui, turned off by key release signals
@@ -896,7 +894,6 @@ public class MainLoop {
     public static void GetMined(int x, int y){
         MainLoop.Inv.addItem(MainLoop.map.map[x][y].tileType);
     }
-
     //display functions
     public static char charForTile(tileSet tile) {
         switch (tile.tileType) {
@@ -1097,9 +1094,6 @@ public class MainLoop {
         double blue = m * color.getBlue();
         return new Color((int) red, (int) green, (int) blue);
     }
-
-    //char stat functions
-
     //Oxygen
     public static void oxygenRefresh(){
         oxygenCount++;
@@ -1160,7 +1154,6 @@ public class MainLoop {
             }
         }
     }
-    //food
     public static void foodRefresh(){
         foodCount++;
         if(foodCount == foodCountMax){
@@ -1168,7 +1161,6 @@ public class MainLoop {
             food--;
         }
     }
-    //bars
     public static void updateDepletionDamage(){
         if(oxygen < 1){
             oxygenDamageCounter++;
@@ -1230,7 +1222,6 @@ public class MainLoop {
             //gui.tagPane.append("edible");
         }
     }
-    //Hits and damage
     public static void updateHitCounts(){
         if(hitCountX > 0 ){
             hitCountX--;
