@@ -4,6 +4,7 @@ import com.sun.tools.javac.Main;
 import java.awt.*;
 
 
+
 public class Entity {
     String chara = ".";
     String type = "default";
